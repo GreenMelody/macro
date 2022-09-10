@@ -1,4 +1,4 @@
-from sqlite3 import Row
+import time
 import pyautogui
 import tkinter as tk
 import tkinter.font as font
@@ -28,7 +28,7 @@ key_list = ['a', 'b', 'c', 'd', 'e','f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
 hotkey_list = ['Ctrl+A', 'Ctrl+C', 'Ctrl+V']
 
 
-save_condition_arr=[]       #save all things, [act_deact, num, select_func, mouse_func, mouseX, mouseY, key_func, hotkey, text_ent, delay_ent]
+save_condition_arr=[]       #save all things, [act_deact, num, select_func, mouse_func, mouseX, mouseY, key_func, key_combo, hotkey, text_ent, delay_ent]
 
 t_cnt=0                     #total target window number
 target_win_arr=[]           #save target windows
@@ -56,7 +56,7 @@ def makeTarget():
     target_win_arr[t_cnt].overrideredirect(True)
 
     #show target num and target point '+'
-    target_lb1_arr.append(tk.Label(target_win_arr[t_cnt], borderwidth=1, relief='ridge', bg='red', text='1111'))
+    target_lb1_arr.append(tk.Label(target_win_arr[t_cnt], borderwidth=1, relief='ridge', bg='red', text=str(t_cnt+1)))
     target_lb2_arr.append(tk.Label(target_win_arr[t_cnt], borderwidth=1, relief='ridge', width=3, font=font_15, fg='red', text='+'))
     target_lb1_arr[t_cnt].grid(row=0, column=0,sticky='ns')
     target_lb2_arr[t_cnt].grid(row=0, column=1)    
@@ -74,22 +74,24 @@ def makeTarget():
     delay_entry_arr         .append(tk.Entry(set_target_lbframe, justify='right', width=8))
 
     #grid checkbutton, label, combobox, entry
-    act_chk_btn_arr[t_cnt]          .grid(row=t_cnt+2, column=0, padx=(5,5), pady=(5,0))
-    no_lb_arr[t_cnt]                .grid(row=t_cnt+2, column=2, padx=(5,5), pady=(5,0))
-    select_func_combo_arr[t_cnt]    .grid(row=t_cnt+2, column=4, padx=(5,5), pady=(5,0))
-    mouse_func_combo_arr[t_cnt]     .grid(row=t_cnt+2, column=6, padx=(5,5), pady=(5,0))
-    key_func_combo_arr[t_cnt]       .grid(row=t_cnt+2, column=8, padx=(5,5), pady=(5,0))
-    key_combo_arr[t_cnt]            .grid(row=t_cnt+2, column=10, padx=(5,5), pady=(5,0))
-    hotkey_combo_arr[t_cnt]         .grid(row=t_cnt+2, column=12, padx=(5,5), pady=(5,0))
-    text_entry_arr[t_cnt]           .grid(row=t_cnt+2, column=14, padx=(5,5), pady=(5,0))
-    delay_entry_arr[t_cnt]          .grid(row=t_cnt+2, column=16, padx=(5,5), pady=(5,0))
+    act_chk_btn_arr         [t_cnt].grid(row=t_cnt+2, column=0, padx=(5,5), pady=(5,0))
+    no_lb_arr               [t_cnt].grid(row=t_cnt+2, column=2, padx=(5,5), pady=(5,0))
+    select_func_combo_arr   [t_cnt].grid(row=t_cnt+2, column=4, padx=(5,5), pady=(5,0))
+    mouse_func_combo_arr    [t_cnt].grid(row=t_cnt+2, column=6, padx=(5,5), pady=(5,0))
+    key_func_combo_arr      [t_cnt].grid(row=t_cnt+2, column=8, padx=(5,5), pady=(5,0))
+    key_combo_arr           [t_cnt].grid(row=t_cnt+2, column=10, padx=(5,5), pady=(5,0))
+    hotkey_combo_arr        [t_cnt].grid(row=t_cnt+2, column=12, padx=(5,5), pady=(5,0))
+    text_entry_arr          [t_cnt].grid(row=t_cnt+2, column=14, padx=(5,5), pady=(5,0))
+    delay_entry_arr         [t_cnt].grid(row=t_cnt+2, column=16, padx=(5,5), pady=(5,0))
 
-    chk_var[t_cnt].set(1)                       #always checked when it created
-    select_func_combo_arr[t_cnt].current(0)     #select first value
-    mouse_func_combo_arr[t_cnt].current(0)     #select first value
-    key_func_combo_arr[t_cnt].current(0)     #select first value
-    key_combo_arr[t_cnt].current(0)     #select first value
-    hotkey_combo_arr[t_cnt].current(0)     #select first value
+    chk_var                 [t_cnt].set(1)                       #always checked when it created
+    select_func_combo_arr   [t_cnt].current(0)     #select first value
+    mouse_func_combo_arr    [t_cnt].current(0)     #select first value
+    key_func_combo_arr      [t_cnt].current(0)     #select first value
+    key_combo_arr           [t_cnt].current(0)     #select first value
+    hotkey_combo_arr        [t_cnt].current(0)     #select first value
+    delay_entry_arr         [t_cnt].delete(0,tk.END)
+    delay_entry_arr         [t_cnt].insert(0,'1000')
     actDeactWidgets('')
     #to move target point using mouse drag
     def drag(event):
@@ -144,7 +146,7 @@ def delTarget():
 
 #when you push the start button, it will save target points and ect. only act checked
 def saveCondition():
-    save_condition_arr=[]
+    save_condition_arr.clear()
     t_cnt = len(target_win_arr)
     for idx in range(0, t_cnt):
         act_deact = chk_var[idx].get()
@@ -155,14 +157,78 @@ def saveCondition():
         mouseX=target_lb2_arr[idx].winfo_rootx() + (target_lb2_arr[idx].winfo_width())/2
         mouseY=target_lb2_arr[idx].winfo_rooty() + (target_lb2_arr[idx].winfo_height())/2
         key_func = key_func_combo_arr[idx].get()
+        key_combo = key_combo_arr[idx].get()
         hotkey = hotkey_combo_arr[idx].get()
         text_ent = text_entry_arr[idx].get()
         delay_ent = delay_entry_arr[idx].get()
-        save_condition_arr.append([act_deact, num, select_func, mouse_func, mouseX, mouseY, key_func, hotkey, text_ent, delay_ent])
+        delay_ent = int(delay_ent) / 1000
+        save_condition_arr.append([act_deact, num, select_func, mouse_func, mouseX, mouseY, key_func, key_combo, hotkey, text_ent, delay_ent])
+        
+    for item in save_condition_arr:
+        print(item)
 
 def play():
-    pyautogui.moveTo(-63.5, 138,2)
-    pass
+    #init delay
+    init_delay = int(init_delay_entry.get()) /1000
+    time.sleep(init_delay)
+
+    for idx, item in enumerate(save_condition_arr):
+        target_lb2_arr[idx]['text']=''
+        if(item[0] == 1):   #act_chkbtn is checked
+            if(item[2] == 'Mouse'):
+                if(item[3] == 'L-Click'):
+                    pyautogui.click(button='left', x=item[4], y=item[5])
+                elif(item[3] == 'L-Down'):
+                    pyautogui.mouseDown(button='left', x=item[4], y=item[5])
+                elif(item[3] == 'L-Up'):
+                    pyautogui.mouseUp(button='left', x=item[4], y=item[5])
+                elif(item[3] == 'R-Click'):
+                    pyautogui.click(button='right', x=item[4], y=item[5])
+                elif(item[3] == 'R-Down'):
+                    pyautogui.mouseDown(button='right', x=item[4], y=item[5])
+                elif(item[3] == 'R-Up'):
+                    pyautogui.mouseUp(button='right', x=item[4], y=item[5])
+                elif(item[3] == 'Double'):
+                    pyautogui.click(clicks=2, button='left', x=item[4], y=item[5])
+                elif(item[3] == 'Move'):
+                    pyautogui.moveTo(item[4], item[5])
+                elif(item[3] == 'Drag'):
+                    pyautogui.dragTo(item[4], item[5], 1, button='left')
+                else:
+                    print('somethings wrong (mouse)')
+                
+            elif(item[2] == 'Keyboard'):
+                if(item[6] == 'Press'):
+                    pyautogui.press(item[7])
+                elif(item[6] == 'KeyDown'):
+                    pyautogui.keyDown(item[7])
+                elif(item[6] == 'KeyUp'):
+                    pyautogui.keyUp(item[7])
+                else:
+                    print('somethings wrong (keyboard)')
+
+            elif(item[2] == 'Hotkey'):
+                spl = item[8].split('+')
+                if(len(spl) == 2):
+                    pyautogui.hotkey(spl[0], spl[1])
+                elif(len(spl) == 3):
+                    pyautogui.hotkey(spl[0], spl[1], spl[2])
+                else:
+                    print('somethings wrong (hotkey)')
+
+            elif(item[2] == 'WriteText'):
+                pyautogui.wirte(item[9])
+            else:
+                print('somethings wrong 1')
+
+            print('sleep')
+            time.sleep(item[10])
+
+        else:
+            print('somethings wrong 2')
+
+        
+        # target_lb2_arr[idx]['text']='+'
   
 #disable comboboxes not necessary 
 def actDeactWidgets(event):
@@ -219,6 +285,7 @@ init_delay_entry = tk.Entry(set_init_lbframe, justify='right', width=8)
 set_init_lbframe    .grid(row=0, column=0, padx=(5,0), pady=(5,0), sticky='news')
 init_delay_lb       .grid(row=0, column=0, padx=(5,0), pady=(5,0))
 init_delay_entry    .grid(row=0, column=1, padx=(5,0), pady=(5,0))
+init_delay_entry    .insert(0,'1000')
 
 
 ####set_target_lbframe
