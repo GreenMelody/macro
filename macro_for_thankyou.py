@@ -28,7 +28,7 @@ key_list = ['a', 'b', 'c', 'd', 'e','f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
 hotkey_list = ['Ctrl+A', 'Ctrl+C', 'Ctrl+V']
 
 
-save_arr=[]             #save all things, [act/deact, num, select_func, mouse_func, mouse_X, mouseY, key_func, key, hotkey, text, delay]
+save_condition_arr=[]             #save all things, [act/deact, num, select_func, mouse_func, mouse_X, mouseY, key_func, key, hotkey, text, delay]
 
 t_cnt=0                 #total target window number
 target_win_arr=[]       #save target windows
@@ -138,15 +138,33 @@ def delTarget():
         hotkey_combo_arr.pop()
         text_entry_arr.pop()
         delay_entry_arr.pop()
+        chk_var.pop()
     else:
         print('no widget to delete')
 
 #when you push the start button, it will save target points and ect. only act checked
-def getTargetPoint():
+def saveCondition():
+    save_condition_arr=[]
     t_cnt = len(target_win_arr)
-    for idx in range(0,t_cnt):
-        if(select_func_combo_arr[idx].get() == 'Mouse'):
-            pass
+    for idx in range(0, t_cnt):
+        act_deact = chk_var[idx].get()
+        num = no_lb_arr[idx].cget('text')
+        select_func = select_func_combo_arr[idx].get()
+        mouse_func = mouse_func_combo_arr[idx].get()
+        #mouse target point X,Y
+        mouseX=target_lb2_arr[idx].winfo_rootx() + (target_lb2_arr[idx].winfo_width())/2
+        print('mx :',mouseX)
+        mouseY=target_lb2_arr[idx].winfo_rooty() + (target_lb2_arr[idx].winfo_height())/2
+        print('my :',mouseY)
+        key_func = key_func_combo_arr[idx].get()
+        hotkey = hotkey_combo_arr[idx].get()
+        text_ent = text_entry_arr[idx].get()
+        delay_ent = delay_entry_arr[idx].get()
+        save_condition_arr.append([act_deact,num,select_func,mouse_func,key_func,hotkey,text_ent,delay_ent])
+
+def play():
+    pyautogui.moveTo(-63.5, 138,2)
+    pass
   
 #disable comboboxes not necessary 
 def actDeactWidgets(event):
@@ -183,8 +201,7 @@ def allWidgetsActDeact():
     pass
 
 
-def moveToTargetPoint():
-    pass
+
 
 
 
@@ -265,8 +282,8 @@ add_target_btn      .grid(row=0, column=2)
 del_target_btn      .grid(row=0, column=9)
 
 
-test2_btn = tk.Button(set_target_lbframe, text='get target point', command=getTargetPoint)
-test3_btn = tk.Button(set_target_lbframe, text='move to target point', command=moveToTargetPoint)
+test2_btn = tk.Button(add_target_lbframe, text='get target point', command=saveCondition)
+test3_btn = tk.Button(add_target_lbframe, text='move to target point', command=play)
 
 
 
@@ -276,8 +293,8 @@ test3_btn = tk.Button(set_target_lbframe, text='move to target point', command=m
 
 
 
-# test2_btn.grid(row=2, column=0)
-# test3_btn.grid(row=3, column=2)
+test2_btn.grid(row=2, column=0)
+test3_btn.grid(row=3, column=0)
 
 
 
