@@ -28,17 +28,17 @@ key_list = ['a', 'b', 'c', 'd', 'e','f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
 hotkey_list = ['Ctrl+A', 'Ctrl+C', 'Ctrl+V']
 
 
-save_condition_arr=[]             #save all things, [act/deact, num, select_func, mouse_func, mouse_X, mouseY, key_func, key, hotkey, text, delay]
+save_condition_arr=[]       #save all things, [act_deact, num, select_func, mouse_func, mouseX, mouseY, key_func, hotkey, text_ent, delay_ent]
 
-t_cnt=0                 #total target window number
-target_win_arr=[]       #save target windows
-target_lb1_arr=[]       #target number label
-target_lb2_arr=[]       #'+' label 
-act_chk_btn_arr=[]      #act/deactive check box 
-chk_var=[]
-no_lb_arr=[]
-select_func_combo_arr=[]
-mouse_func_combo_arr=[]
+t_cnt=0                     #total target window number
+target_win_arr=[]           #save target windows
+target_lb1_arr=[]           #target number label
+target_lb2_arr=[]               #'+' label 
+act_chk_btn_arr=[]          #act/deactive check box 
+chk_var=[]                  #save checked or not(1 or 0) for act_chk_btn
+no_lb_arr=[]                #number of list
+select_func_combo_arr=[]    #select function(mouse, keyboard, hotkey, text)
+mouse_func_combo_arr=[]     
 key_func_combo_arr=[]
 key_combo_arr=[]
 hotkey_combo_arr=[]
@@ -112,18 +112,18 @@ def delTarget():
     t_cnt = len(target_win_arr)
     if t_cnt != 0:
         #destroy widgets
-        target_lb1_arr[t_cnt-1].destroy()
-        target_lb2_arr[t_cnt-1].destroy()
-        target_win_arr[t_cnt-1].destroy()
-        act_chk_btn_arr[t_cnt-1].destroy()
-        no_lb_arr[t_cnt-1].destroy() 
-        select_func_combo_arr[t_cnt-1].destroy()
-        mouse_func_combo_arr[t_cnt-1].destroy()
-        key_func_combo_arr[t_cnt-1].destroy()
-        key_combo_arr[t_cnt-1].destroy()
-        hotkey_combo_arr[t_cnt-1].destroy()
-        text_entry_arr[t_cnt-1].destroy()
-        delay_entry_arr[t_cnt-1].destroy()
+        target_lb1_arr          [t_cnt-1].destroy()
+        target_lb2_arr          [t_cnt-1].destroy()
+        target_win_arr          [t_cnt-1].destroy()
+        act_chk_btn_arr         [t_cnt-1].destroy()
+        no_lb_arr               [t_cnt-1].destroy() 
+        select_func_combo_arr   [t_cnt-1].destroy()
+        mouse_func_combo_arr    [t_cnt-1].destroy()
+        key_func_combo_arr      [t_cnt-1].destroy()
+        key_combo_arr           [t_cnt-1].destroy()
+        hotkey_combo_arr        [t_cnt-1].destroy()
+        text_entry_arr          [t_cnt-1].destroy()
+        delay_entry_arr         [t_cnt-1].destroy()
 
         #remove list
         target_lb1_arr.pop()
@@ -153,14 +153,12 @@ def saveCondition():
         mouse_func = mouse_func_combo_arr[idx].get()
         #mouse target point X,Y
         mouseX=target_lb2_arr[idx].winfo_rootx() + (target_lb2_arr[idx].winfo_width())/2
-        print('mx :',mouseX)
         mouseY=target_lb2_arr[idx].winfo_rooty() + (target_lb2_arr[idx].winfo_height())/2
-        print('my :',mouseY)
         key_func = key_func_combo_arr[idx].get()
         hotkey = hotkey_combo_arr[idx].get()
         text_ent = text_entry_arr[idx].get()
         delay_ent = delay_entry_arr[idx].get()
-        save_condition_arr.append([act_deact,num,select_func,mouse_func,key_func,hotkey,text_ent,delay_ent])
+        save_condition_arr.append([act_deact, num, select_func, mouse_func, mouseX, mouseY, key_func, hotkey, text_ent, delay_ent])
 
 def play():
     pyautogui.moveTo(-63.5, 138,2)
