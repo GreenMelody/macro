@@ -8,7 +8,7 @@ import tkinter.ttk as ttk
 
 window = tk.Tk()
 window.title('Tnank you for your help')
-window.geometry('1000x400+0+0')
+window.geometry('1500x400+0+0')
 window.resizable(True,True)
 
 font_15 = font.Font(size=15)
@@ -37,8 +37,11 @@ keys_arr = ['\t', '\n', '\r', ' ', '!', '"', '#', '$', '%', '&', "'", '(',
 'up', 'volumedown', 'volumemute', 'volumeup', 'win', 'winleft', 'winright', 'yen',
 'command', 'option', 'optionleft', 'optionright']
 target_point_arr=[]     #save target point absolute screen point
+
+t_cnt=0                 #total target window number
 target_win_arr=[]       #save target windows
-t_cnt=0                 #total target number
+target_lb1_arr=[]       #target number label
+target_lb2_arr=[]       #'+' label 
 act_chk_btn_arr=[]      #act/deactive check box 
 chk_var=[]
 no_lb_arr=[]
@@ -53,18 +56,19 @@ delay_entry_arr=[]
 #make new target window
 def makeTarget():
     #make new window and setting
-    targetUI = tk.Toplevel(window)
-    targetUI.wm_attributes("-topmost", True)
-    targetUI.wm_attributes("-transparentcolor", '#F0F0F0')      #to make window transparent
-    targetUI.geometry('150x100')
-    targetUI.overrideredirect(True)
+    t_cnt = len(target_win_arr)
+    target_win_arr.append(tk.Toplevel(window))
+    target_win_arr[t_cnt].wm_attributes("-topmost", True)
+    target_win_arr[t_cnt].wm_attributes("-transparentcolor", '#F0F0F0')      #to make window transparent
+    target_win_arr[t_cnt].geometry('150x100')
+    target_win_arr[t_cnt].overrideredirect(True)
 
     #show target num and target point '+'
-    t_cnt = len(target_win_arr)
-    target_win_arr.append(tk.Label(targetUI, borderwidth=1, relief='ridge', bg='red', text='1111'))
-    target_point_lb = tk.Label(targetUI, borderwidth=1, relief='ridge', width=3, font=font_15, fg='red', text='+')
-    target_win_arr[t_cnt].grid(row=0, column=0,sticky='ns')
-    target_point_lb.grid(row=0, column=1)    
+    
+    target_lb1_arr.append(tk.Label(target_win_arr[t_cnt], borderwidth=1, relief='ridge', bg='red', text='1111'))
+    target_lb2_arr.append(tk.Label(target_win_arr[t_cnt], borderwidth=1, relief='ridge', width=3, font=font_15, fg='red', text='+'))
+    target_lb1_arr[t_cnt].grid(row=0, column=0,sticky='ns')
+    target_lb2_arr[t_cnt].grid(row=0, column=1)    
 
     chk_var.append(tk.IntVar())
     act_chk_btn_arr         .append(ttk.Checkbutton(set_target_lbframe, variable=chk_var[t_cnt]))
@@ -92,17 +96,50 @@ def makeTarget():
 
     #to move target point using mouse drag
     def drag(event):
-        width = str(targetUI.winfo_width())
-        height = str(targetUI.winfo_height())
+        width = str(target_win_arr[t_cnt].winfo_width())
+        height = str(target_win_arr[t_cnt].winfo_height())
         pos_x = str(pyautogui.position().x)
         pos_y = str(pyautogui.position().y)
-        targetUI.geometry(width + 'x' + height + '+' + pos_x + '+' + pos_y)
+        target_win_arr[t_cnt].geometry(width + 'x' + height + '+' + pos_x + '+' + pos_y)
 
     #mouse left drag event
     target_win_arr[t_cnt].bind("<B1-Motion>", drag)
 
-def delTarget(num):
-    pass
+
+#delete target and list
+def delTarget():
+    t_cnt = len(target_win_arr)
+    if t_cnt != 0:
+        #destroy widgets
+        target_lb1_arr[t_cnt-1].destroy()
+        target_lb2_arr[t_cnt-1].destroy()
+        target_win_arr[t_cnt-1].destroy()
+        act_chk_btn_arr[t_cnt-1].destroy()
+        no_lb_arr[t_cnt-1].destroy() 
+        select_func_combo_arr[t_cnt-1].destroy()
+        mouse_func_combo_arr[t_cnt-1].destroy()
+        key_func_combo_arr[t_cnt-1].destroy()
+        key_combo_arr[t_cnt-1].destroy()
+        hotkey_combo_arr[t_cnt-1].destroy()
+        text_entry_arr[t_cnt-1].destroy()
+        delay_entry_arr[t_cnt-1].destroy()
+
+        #remove list
+        target_lb1_arr.pop()
+        target_lb2_arr.pop()
+        target_win_arr.pop()
+        act_chk_btn_arr.pop()
+        no_lb_arr.pop() 
+        select_func_combo_arr.pop()
+        mouse_func_combo_arr.pop()
+        key_func_combo_arr.pop()
+        key_combo_arr.pop()
+        hotkey_combo_arr.pop()
+        text_entry_arr.pop()
+        delay_entry_arr.pop()
+    else:
+        print('no widget to delete')
+
 
 def getTargetPoint():
     pass
