@@ -310,6 +310,7 @@ def actDeactWidgets(event):
        
 
 def allWidgetsActDeact():
+
     pass
 
 
@@ -420,11 +421,16 @@ test3_btn.grid(row=3, column=0)
 
 #only digit input
 def onlyNumbers(event):
-    if str.isdigit(event.char):
-        
-        print(event.char)
+    print(event.keysym)
+    except_keys=['BackSpace', 'Escape','Caps_Lock','Shift_L','Control_L','Alt_L','Alt_L','Win_L','Win_R','App','Shift_L','Return',
+                    'F1','F2','F3','F4','F5','F6','F7','F8','F9','F10','F11','F12','Scroll_Lock','Pause','Insert',
+                    'Home','Prior','Delete','End','Next','Num_Lock','Left','Down','Right','Up', '??']
+    if str.isdigit(event.keysym):
+        print('num'+ event.keysym)
+    elif(event.keysym in except_keys):
+        pass
     else:
-        txt = str(init_delay_entry.get())
+        txt = str(event.widget.get())
         event.widget.delete(0,'end')
         event.widget.insert(0, txt[:-1])
 
@@ -433,6 +439,7 @@ def onlyNumbers(event):
 
 #only digit input
 init_delay_entry.bind('<KeyRelease>', onlyNumbers)
+loop_entry.bind('<KeyRelease>', onlyNumbers)
 
 # 종료시 호출
 def on_closing():
