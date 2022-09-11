@@ -1,9 +1,12 @@
+from queue import Empty
+import threading
 import time
 import pyautogui
 import tkinter as tk
 import tkinter.font as font
 import tkinter.ttk as ttk
 import keyboard
+from tkinter import messagebox
 
 
 window = tk.Tk()
@@ -23,10 +26,7 @@ key_list = ['a', 'b', 'c', 'd', 'e','f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
             'space', 'backspace', 'tab', 'alt', 'altleft', 'altright', 'ctrl', 'ctrlleft', 'ctrlright', 'shift', 'shiftleft', 'shiftright', 'del', 'delete', 'left', 'right', 'up', 'down', 'end', 'enter', 'esc', 'escape', 'hanguel', 'hangul', 'home', 'insert',
             'num0', 'num1', 'num2', 'num3', 'num4', 'num5', 'num6', 'num7', 'num8', 'num9', 'numlock', 'pagedown', 'pageup', 'pause', 'pgdn', 'pgup', 'printscreen', 'prntscrn', 'scrolllock',
             '!', '"', '#', '$', '%', '&', "'", '(', ')', '*', '+', ',', '-', '.', '/',  ':', ';', '<', '=', '>', '?', '@', '[', '\\', ']', '^', '_', '`', '{', '|', '}', '~']
-            
-
 hotkey_list = ['Ctrl+a', 'Ctrl+c', 'Ctrl+v']
-
 
 save_condition_arr=[]       #save all things, [act_deact, num, select_func, mouse_func, mouseX, mouseY, key_func, key_combo, hotkey, text_ent, delay_ent]
 
@@ -44,6 +44,8 @@ key_combo_arr=[]
 hotkey_combo_arr=[]
 text_entry_arr=[]
 delay_entry_arr=[]
+
+thd1_bool = False
 
 #make new target window
 def makeTarget():
@@ -128,19 +130,19 @@ def delTarget():
         delay_entry_arr         [t_cnt-1].destroy()
 
         #remove list
-        target_lb1_arr.pop()
-        target_lb2_arr.pop()
-        target_win_arr.pop()
-        act_chk_btn_arr.pop()
-        no_lb_arr.pop() 
-        select_func_combo_arr.pop()
-        mouse_func_combo_arr.pop()
-        key_func_combo_arr.pop()
-        key_combo_arr.pop()
-        hotkey_combo_arr.pop()
-        text_entry_arr.pop()
-        delay_entry_arr.pop()
-        chk_var.pop()
+        target_lb1_arr          .pop()
+        target_lb2_arr          .pop()
+        target_win_arr          .pop()
+        act_chk_btn_arr         .pop()
+        no_lb_arr               .pop() 
+        select_func_combo_arr   .pop()
+        mouse_func_combo_arr    .pop()
+        key_func_combo_arr      .pop()
+        key_combo_arr           .pop()
+        hotkey_combo_arr        .pop()
+        text_entry_arr          .pop()
+        delay_entry_arr         .pop()
+        chk_var                 .pop()
     else:
         print('no widget to delete')
 
@@ -149,91 +151,128 @@ def saveCondition():
     save_condition_arr.clear()
     t_cnt = len(target_win_arr)
     for idx in range(0, t_cnt):
-        act_deact = chk_var[idx].get()
-        num = no_lb_arr[idx].cget('text')
+        act_deact   = chk_var[idx].get()
+        num         = no_lb_arr[idx].cget('text')
         select_func = select_func_combo_arr[idx].get()
-        mouse_func = mouse_func_combo_arr[idx].get()
+        mouse_func  = mouse_func_combo_arr[idx].get()
         #mouse target point X,Y
-        mouseX=target_lb2_arr[idx].winfo_rootx() + (target_lb2_arr[idx].winfo_width())/2
-        mouseY=target_lb2_arr[idx].winfo_rooty() + (target_lb2_arr[idx].winfo_height())/2
-        key_func = key_func_combo_arr[idx].get()
-        key_combo = key_combo_arr[idx].get()
-        hotkey = hotkey_combo_arr[idx].get()
-        text_ent = text_entry_arr[idx].get()
-        delay_ent = delay_entry_arr[idx].get()
-        delay_ent = int(delay_ent) / 1000
-        save_condition_arr.append([act_deact, num, select_func, mouse_func, mouseX, mouseY, key_func, key_combo, hotkey, text_ent, delay_ent])
+        mouseX      = target_lb2_arr[idx].winfo_rootx() + (target_lb2_arr[idx].winfo_width())/2
+        mouseY      = target_lb2_arr[idx].winfo_rooty() + (target_lb2_arr[idx].winfo_height())/2
+        key_func    = key_func_combo_arr[idx].get()
+        key_combo   = key_combo_arr[idx].get()
+        hotkey      = hotkey_combo_arr[idx].get()
+        text_ent    = text_entry_arr[idx].get()
+        delay_ent   = delay_entry_arr[idx].get()
+        if(delay_ent == ''):
+            delay_ent = int(10)
+        else:
+            delay_ent   = int(delay_ent) / 1000
+        target_win_posX = target_win_arr[idx].winfo_rootx()
+        target_win_posY = target_win_arr[idx].winfo_rooty()
+
+        save_condition_arr.append([act_deact, num, select_func, mouse_func, mouseX, mouseY, key_func, key_combo, hotkey, text_ent, delay_ent, target_win_posX, target_win_posY])
         
     for item in save_condition_arr:
         print(item)
+    
+    play()
+
+
+def threadStart():
+    global thd1_bool
+    thd1 = threading.Thread(target=saveCondition)
+    if(thd1_bool):
+        print('already thread started')
+    else:
+        print('thread start!')
+        thd1_bool = True
+        thd1.start()
+
 
 def play():
+    global thd1_bool
+
+    loop = loop_entry.get()
+    init_delay = init_delay_entry.get()
+
+    #empty check
+    if((loop == '') or (init_delay == '')):
+        messagebox.showwarning(title='Empty value', message='Please insert values')
+        print('abnormal termination')
+        return 0
+
+    loop = int(loop)
     #init delay
     init_delay = int(init_delay_entry.get()) /1000
     time.sleep(init_delay)
 
-    for idx, item in enumerate(save_condition_arr):
-        target_lb2_arr[idx]['text']=''
-        if(item[0] == 1):   #act_chkbtn is checked
-            if(item[2] == 'Mouse'):
-                if(item[3] == 'L-Click'):
-                    pyautogui.click(button='left', x=item[4], y=item[5])
-                elif(item[3] == 'L-Down'):
-                    pyautogui.mouseDown(button='left', x=item[4], y=item[5])
-                elif(item[3] == 'L-Up'):
-                    pyautogui.mouseUp(button='left', x=item[4], y=item[5])
-                elif(item[3] == 'R-Click'):
-                    pyautogui.click(button='right', x=item[4], y=item[5])
-                elif(item[3] == 'R-Down'):
-                    pyautogui.mouseDown(button='right', x=item[4], y=item[5])
-                elif(item[3] == 'R-Up'):
-                    pyautogui.mouseUp(button='right', x=item[4], y=item[5])
-                elif(item[3] == 'L-Double'):
-                    pyautogui.click(clicks=2, button='left', x=item[4], y=item[5])
-                elif(item[3] == 'L-Triple'):
-                    pyautogui.click(clicks=3, button='left', x=item[4], y=item[5])
-                elif(item[3] == 'Move'):
-                    pyautogui.moveTo(item[4], item[5])
-                elif(item[3] == 'Drag'):
-                    pyautogui.dragTo(item[4], item[5], 1, button='left')
-                else:
-                    print('somethings wrong (mouse)')
-                
-            elif(item[2] == 'Keyboard'):
-                if(item[6] == 'Press'):
-                    pyautogui.press(item[7])
-                elif(item[6] == 'KeyDown'):
-                    pyautogui.keyDown(item[7])
-                elif(item[6] == 'KeyUp'):
-                    pyautogui.keyUp(item[7])
-                else:
-                    print('somethings wrong (keyboard)')
+    for idx_lp in range(1, loop+1):
+        for idx, item in enumerate(save_condition_arr):
+            target_lb2_arr[idx]['text']=''
+            if(item[0] == 1):   #act_chkbtn is checked
+                if(item[2] == 'Mouse'):
+                    if(item[3] == 'L-Click'):
+                        pyautogui.click(button='left', x=item[4], y=item[5])
+                    elif(item[3] == 'L-Down'):
+                        pyautogui.mouseDown(button='left', x=item[4], y=item[5])
+                    elif(item[3] == 'L-Up'):
+                        pyautogui.mouseUp(button='left', x=item[4], y=item[5])
+                    elif(item[3] == 'R-Click'):
+                        pyautogui.click(button='right', x=item[4], y=item[5])
+                    elif(item[3] == 'R-Down'):
+                        pyautogui.mouseDown(button='right', x=item[4], y=item[5])
+                    elif(item[3] == 'R-Up'):
+                        pyautogui.mouseUp(button='right', x=item[4], y=item[5])
+                    elif(item[3] == 'L-Double'):
+                        pyautogui.click(clicks=2, button='left', x=item[4], y=item[5])
+                    elif(item[3] == 'L-Triple'):
+                        pyautogui.click(clicks=3, button='left', x=item[4], y=item[5])
+                    elif(item[3] == 'Move'):
+                        pyautogui.moveTo(item[4], item[5])
+                    elif(item[3] == 'Drag'):
+                        pyautogui.dragTo(item[4], item[5], 1, button='left')
+                    else:
+                        print('somethings wrong (mouse)')
+                    
+                elif(item[2] == 'Keyboard'):
+                    if(item[6] == 'Press'):
+                        pyautogui.press(item[7])
+                    elif(item[6] == 'KeyDown'):
+                        pyautogui.keyDown(item[7])
+                    elif(item[6] == 'KeyUp'):
+                        pyautogui.keyUp(item[7])
+                    else:
+                        print('somethings wrong (keyboard)')
 
-            elif(item[2] == 'Hotkey'):
-                spl = item[8].split('+')
-                if(len(spl) == 2):
-                    print('hotkey2')
-                    print(spl[0],' , ', spl[1])
-                    pyautogui.hotkey(spl[0], spl[1])
-                elif(len(spl) == 3):
-                    pyautogui.hotkey(spl[0], spl[1], spl[2])
-                else:
-                    print('somethings wrong (hotkey)')
+                elif(item[2] == 'Hotkey'):
+                    spl = item[8].split('+')
+                    if(len(spl) == 2):
+                        print('hotkey2')
+                        print(spl[0],' , ', spl[1])
+                        pyautogui.hotkey(spl[0], spl[1])
+                    elif(len(spl) == 3):
+                        pyautogui.hotkey(spl[0], spl[1], spl[2])
+                    else:
+                        print('somethings wrong (hotkey)')
 
-            elif(item[2] == 'WriteText'):
-                # pyautogui.write(item[9])  #it doesn't work in 한글
-                keyboard.write(item[9])
+                elif(item[2] == 'WriteText'):
+                    # pyautogui.write(item[9])  #it doesn't work in 한글
+                    keyboard.write(item[9])
+                else:
+                    print('somethings wrong 1')
+
+                if(thd1_bool == False): break
+                time.sleep(item[10])
+
             else:
-                print('somethings wrong 1')
+                print('somethings wrong 2')
 
-            print('sleep')
-            time.sleep(item[10])
+            target_lb2_arr[idx]['text']='+'
 
-        else:
-            print('somethings wrong 2')
+        if(thd1_bool == False): break
 
-        
-        # target_lb2_arr[idx]['text']='+'
+    thd1_bool = False
+    print('thread done!')
   
 #disable comboboxes not necessary 
 def actDeactWidgets(event):
@@ -245,24 +284,28 @@ def actDeactWidgets(event):
             key_combo_arr[idx].config(state='disabled')
             hotkey_combo_arr[idx].config(state='disabled')
             text_entry_arr[idx].config(state='readonly')
+            target_win_arr[idx].deiconify()     #show target window
         elif(select_func_combo_arr[idx].get() == 'Keyboard'):
             mouse_func_combo_arr[idx].config(state='disabled')
             key_func_combo_arr[idx].config(state='readonly')
             key_combo_arr[idx].config(state='readonly')
             hotkey_combo_arr[idx].config(state='disabled')
             text_entry_arr[idx].config(state='readonly')
+            target_win_arr[idx].withdraw()     #hide target window
         elif(select_func_combo_arr[idx].get() == 'Hotkey'):
             mouse_func_combo_arr[idx].config(state='disabled')
             key_func_combo_arr[idx].config(state='disabled')
             key_combo_arr[idx].config(state='disabled')
             hotkey_combo_arr[idx].config(state='readonly')
             text_entry_arr[idx].config(state='readonly')
+            target_win_arr[idx].withdraw()     #hide target window
         elif(select_func_combo_arr[idx].get() == 'WriteText'):
             mouse_func_combo_arr[idx].config(state='disabled')
             key_func_combo_arr[idx].config(state='disabled')
             key_combo_arr[idx].config(state='disabled')
             hotkey_combo_arr[idx].config(state='disabled')
             text_entry_arr[idx].config(state='normal')
+            target_win_arr[idx].withdraw()     #hide target window
         
        
 
@@ -282,16 +325,20 @@ def allWidgetsActDeact():
 #################################  UI using tkinter
 
 ####set_init
-set_init_lbframe = tk.LabelFrame(window, text='Set Initial values')
-init_delay_lb = tk.Label(set_init_lbframe, text='Init delay(ms) : ')
-init_delay_entry = tk.Entry(set_init_lbframe, justify='right', width=8)
+set_init_lbframe    = tk.LabelFrame(window, text='Set Initial values')
+init_delay_lb       = tk.Label(set_init_lbframe, justify='right', text='Init delay(ms) : ')
+init_delay_entry    = tk.Entry(set_init_lbframe, justify='right', width=8)
+loop_lb             = tk.Label(set_init_lbframe, justify='right', text='Loop : ', bg='red')
+loop_entry          = tk.Entry(set_init_lbframe, justify='right', width=8)
 
 ####set_init GRID
-set_init_lbframe    .grid(row=0, column=0, padx=(5,0), pady=(5,0), sticky='news')
-init_delay_lb       .grid(row=0, column=0, padx=(5,0), pady=(5,0))
-init_delay_entry    .grid(row=0, column=1, padx=(5,0), pady=(5,0))
+set_init_lbframe    .grid(row=0, column=0, padx=(5,5), pady=(5,0), sticky='nws')
+init_delay_lb       .grid(row=0, column=0, padx=(5,5), pady=(5,5))
+init_delay_entry    .grid(row=0, column=1, padx=(5,5), pady=(5,0))
 init_delay_entry    .insert(0,'1000')
-
+loop_lb             .grid(row=1, column=0, padx=(5,5), pady=(5,0), sticky='ew')
+loop_entry          .grid(row=1, column=1, padx=(5,5), pady=(5,5))
+loop_entry          .insert(0,'1')
 
 ####set_target_lbframe
 set_target_lbframe = tk.LabelFrame(window, text='Set Targets')
@@ -353,7 +400,7 @@ del_target_btn      .grid(row=0, column=9)
 
 
 test2_btn = tk.Button(add_target_lbframe, text='get target point', command=saveCondition)
-test3_btn = tk.Button(add_target_lbframe, text='move to target point', command=play)
+test3_btn = tk.Button(add_target_lbframe, text='move to target point', command=threadStart)
 
 
 
@@ -378,10 +425,8 @@ def onlyNumbers(event):
         print(event.char)
     else:
         txt = str(init_delay_entry.get())
-        #init_delay_entry.delete(0,'end')
-        #init_delay_entry.insert(0, txt[:-1])
-        init_delay_entry.delete(0,'end')
-        init_delay_entry.insert(0, txt[:-1])
+        event.widget.delete(0,'end')
+        event.widget.insert(0, txt[:-1])
 
 
 
@@ -389,6 +434,12 @@ def onlyNumbers(event):
 #only digit input
 init_delay_entry.bind('<KeyRelease>', onlyNumbers)
 
+# 종료시 호출
+def on_closing():
+    if messagebox.askokcancel("Quit", "Do you want to quit?"):
+        thd1_bool = False
+        window.destroy()
 
+window.protocol("WM_DELETE_WINDOW", on_closing)
 
 window.mainloop()
