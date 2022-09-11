@@ -1,13 +1,14 @@
-from os import stat
-from queue import Empty
 import threading
 import time
+import json
+from collections import OrderedDict
 import pyautogui
 import tkinter as tk
 import tkinter.font as font
 import tkinter.ttk as ttk
 import keyboard
 from tkinter import messagebox
+from tkinter import filedialog
 
 
 window = tk.Tk()
@@ -29,7 +30,7 @@ key_list = ['a', 'b', 'c', 'd', 'e','f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
             '!', '"', '#', '$', '%', '&', "'", '(', ')', '*', '+', ',', '-', '.', '/',  ':', ';', '<', '=', '>', '?', '@', '[', '\\', ']', '^', '_', '`', '{', '|', '}', '~']
 hotkey_list = ['Ctrl+a', 'Ctrl+c', 'Ctrl+v']
 
-save_condition_arr=[]       #save all things, [act_deact, num, select_func, mouse_func, mouseX, mouseY, key_func, key_combo, hotkey, text_ent, delay_ent]
+save_condition_arr=[]       #save all things, [num, act_deact, select_func, mouse_func, mouseX, mouseY, key_func, key_combo, hotkey, text_ent, delay_ent, target_win_posX, target_win_posY]
 
 t_cnt=0                     #total target window number
 target_win_arr=[]           #save target windows
@@ -66,8 +67,8 @@ def makeTarget():
 
     #create checkbutton, label, combobox, entry
     chk_var.append(tk.IntVar())
-    act_chk_btn_arr         .append(ttk.Checkbutton(set_target_lbframe, variable=chk_var[t_cnt]))
     no_lb_arr               .append(tk.Label(set_target_lbframe, text=str(t_cnt+1)))
+    act_chk_btn_arr         .append(ttk.Checkbutton(set_target_lbframe, variable=chk_var[t_cnt]))
     select_func_combo_arr .append(ttk.Combobox(set_target_lbframe, state='readonly', width=8, values=select_func_list))
     mouse_func_combo_arr  .append(ttk.Combobox(set_target_lbframe, state='readonly', width=8, values=mouse_func_list))
     key_func_combo_arr    .append(ttk.Combobox(set_target_lbframe, state='readonly', width=8, values=key_func_list))
@@ -77,8 +78,8 @@ def makeTarget():
     delay_entry_arr         .append(tk.Entry(set_target_lbframe, justify='right', width=8))
 
     #grid checkbutton, label, combobox, entry
-    act_chk_btn_arr         [t_cnt].grid(row=t_cnt+2, column=0, padx=(5,5), pady=(5,0))
-    no_lb_arr               [t_cnt].grid(row=t_cnt+2, column=2, padx=(5,5), pady=(5,0))
+    no_lb_arr               [t_cnt].grid(row=t_cnt+2, column=0, padx=(5,5), pady=(5,0))
+    act_chk_btn_arr         [t_cnt].grid(row=t_cnt+2, column=2, padx=(5,5), pady=(5,0))
     select_func_combo_arr   [t_cnt].grid(row=t_cnt+2, column=4, padx=(5,5), pady=(5,0))
     mouse_func_combo_arr    [t_cnt].grid(row=t_cnt+2, column=6, padx=(5,5), pady=(5,0))
     key_func_combo_arr      [t_cnt].grid(row=t_cnt+2, column=8, padx=(5,5), pady=(5,0))
@@ -96,6 +97,7 @@ def makeTarget():
     delay_entry_arr         [t_cnt].delete(0,tk.END)
     delay_entry_arr         [t_cnt].insert(0,'1000')
     actDeactWidgets('')
+
     #to move target point using mouse drag
     def drag(event):
         width = str(target_win_arr[t_cnt].winfo_width())
@@ -147,12 +149,13 @@ def delTarget():
     else:
         print('no widget to delete')
 
-
+#thread start
 def threadStart():
     global thd1_bool
     thd1 = threading.Thread(target=saveCondition)
     if(thd1_bool):
-        print('already thread started')
+        print('already thread started.')
+        thd1_bool = False
     else:
         if(len(target_win_arr) < 1):
             messagebox.showwarning(title='Not enough targets', message='Please add targets push the + button')
@@ -162,6 +165,7 @@ def threadStart():
             start_btn.config(bg='red')
             thd1.start()
 
+#thread stop
 def threadStop():
     global thd1_bool
     thd1_bool = False
@@ -196,8 +200,8 @@ def saveCondition():
     save_condition_arr.clear()
     t_cnt = len(target_win_arr)
     for idx in range(0, t_cnt):
-        act_deact   = chk_var[idx].get()
         num         = no_lb_arr[idx].cget('text')
+        act_deact   = chk_var[idx].get()
         select_func = select_func_combo_arr[idx].get()
         mouse_func  = mouse_func_combo_arr[idx].get()
         #mouse target point X,Y
@@ -212,7 +216,7 @@ def saveCondition():
         target_win_posX = target_win_arr[idx].winfo_rootx()
         target_win_posY = target_win_arr[idx].winfo_rooty()
 
-        save_condition_arr.append([act_deact, num, select_func, mouse_func, mouseX, mouseY, key_func, key_combo, hotkey, text_ent, delay_ent, target_win_posX, target_win_posY])
+        save_condition_arr.append([num, act_deact, select_func, mouse_func, mouseX, mouseY, key_func, key_combo, hotkey, text_ent, delay_ent, target_win_posX, target_win_posY])
         
     for item in save_condition_arr:
         print(item)
@@ -240,7 +244,7 @@ def play():
             prog_element_lb2.config(text=str(idx+1).zfill(3) + '/' + str(len(save_condition_arr)).zfill(3))
 
             target_lb2_arr[idx]['text']=''
-            if(item[0] == 1):   #act_chkbtn is checked
+            if(item[1] == 1):   #act_chkbtn is checked
                 if(item[2] == 'Mouse'):
                     if(item[3] == 'L-Click'):
                         pyautogui.click(button='left', x=item[4], y=item[5])
@@ -373,9 +377,19 @@ def allWidgetsActDeact():
         actDeactWidgets('')
     
 
+def saveFile():
+    filename = filedialog.asksaveasfilename(initialdir="/", title="Save File",
+                                          filetypes=(("Json", "*.json"),("Text", "*.txt"), 
+                                          ("all files", "*.*")))
+    for idx, item in enumerate(save_condition_arr):
+        file_data['act_deact_chk'] = act
+    print(filename)
 
-
-
+def loadFile():
+    filename = filedialog.askopenfilename(initialdir="/", title="Select file",
+                                          filetypes=(("Json", "*.json"),("Text", "*.txt"),
+                                          ("all files", "*.*")))
+    print(filename)
 
 
 
@@ -387,17 +401,17 @@ def allWidgetsActDeact():
 
 ####set_init
 set_init_lbframe    = tk.LabelFrame(window, text='Set Initial values')
-init_delay_lb       = tk.Label(set_init_lbframe, justify='right', text='Init delay(ms) : ')
+init_delay_lb       = tk.Label(set_init_lbframe, justify='right', text='Init delay(ms):')
 init_delay_entry    = tk.Entry(set_init_lbframe, justify='right', width=8)
-loop_lb             = tk.Label(set_init_lbframe, justify='right', text='Loop : ', anchor='e')
+loop_lb             = tk.Label(set_init_lbframe, justify='right', text='Loop:', anchor='e')
 loop_entry          = tk.Entry(set_init_lbframe, justify='right', width=8)
 ####set_init GRID
-set_init_lbframe    .grid(row=0, column=0, padx=(5,0), pady=(5,0), sticky='nws')
-init_delay_lb       .grid(row=0, column=0, padx=(5,5), pady=(5,0))
-init_delay_entry    .grid(row=0, column=1, padx=(5,5), pady=(5,0))
+set_init_lbframe    .grid(row=0, column=0, padx=(5,0), pady=(5,0), sticky='news')
+init_delay_lb       .grid(row=0, column=0, padx=(5,0), pady=(5,0))
+init_delay_entry    .grid(row=0, column=1, padx=(5,0), pady=(5,0))
 init_delay_entry    .insert(0,'1000')
-loop_lb             .grid(row=1, column=0, padx=(5,5), pady=(5,5), sticky='ew')
-loop_entry          .grid(row=1, column=1, padx=(5,5), pady=(5,5))
+loop_lb             .grid(row=1, column=0, padx=(5,0), pady=(5,5), sticky='ew')
+loop_entry          .grid(row=1, column=1, padx=(5,0), pady=(5,5))
 loop_entry          .insert(0,'1')
 
 
@@ -408,30 +422,51 @@ del_target_btn      = tk.Button(add_target_lbframe, text='-', width=3, height=1,
 ####add_target_lbframe GRID
 add_target_lbframe  .grid(row=0, column=1, sticky='news', padx=(5,0), pady=(5,0))
 add_target_btn      .grid(row=0, column=0, sticky='news', padx=(5,0), pady=(5,0))
-del_target_btn      .grid(row=0, column=1, sticky='news', padx=(5,5), pady=(5,0))
+del_target_btn      .grid(row=0, column=1, sticky='news', padx=(5,0), pady=(5,0))
 
 
 ####Start_lbframe
-start_lbframe       = tk.LabelFrame(window, text='Start/Stop')
-start_btn           = tk.Button(start_lbframe, text='▶', width=7, height=2, command=threadStart)
+start_lbframe       = tk.LabelFrame(window, text='Start')
+start_btn           = tk.Button(start_lbframe, text='▶', width=3, height=1, font=font_15_bold, command=threadStart)
 ####Start_lbframe GRID
 start_lbframe       .grid(row=0, column=2, sticky='news', padx=(5,0), pady=(5,0))
-start_btn           .grid(row=0, column=1, sticky='news', padx=(5,5), pady=(5,0))
+start_btn           .grid(row=0, column=0, sticky='news', padx=(5,0), pady=(5,0))
+
+
+####Stop_lbframe
+stop_lbframe        = tk.LabelFrame(window, text='Stop')
+stop_lb1            = tk.Label(stop_lbframe, text='Push ''▶'' button OR', anchor='w')
+stop_lb2            = tk.Label(stop_lbframe, text='Ctrl+Shift+Space', anchor='w')
+####Start_lbframe GRID
+stop_lbframe       .grid(row=0, column=3, sticky='news', padx=(5,0), pady=(5,0))
+stop_lb1            .grid(row=0, column=0, sticky='news', padx=(5,0), pady=(5,0))
+stop_lb2            .grid(row=1, column=0, sticky='news', padx=(5,0), pady=(0,0))
+
 
 ####progress_lbframe
 progress_lbframe    =tk.LabelFrame(window, text='Progress')
-prog_loop_lb1       =tk.Label(progress_lbframe, text='Loop : ', anchor='e')
+prog_loop_lb1       =tk.Label(progress_lbframe, text='Loop :', anchor='e')
 prog_loop_lb2       =tk.Label(progress_lbframe, text='000/000')
-prog_element_lb1    =tk.Label(progress_lbframe, text='Element : ', anchor='e')
+prog_element_lb1    =tk.Label(progress_lbframe, text='Element :', anchor='e')
 prog_element_lb2    =tk.Label(progress_lbframe, text='000/000')
-
-
 ####progress_lbframe GRID
-progress_lbframe    .grid(row=0, column=3, sticky='news', padx=(5,0), pady=(5,0))
+progress_lbframe    .grid(row=0, column=4, sticky='news', padx=(5,0), pady=(5,0))
 prog_loop_lb1       .grid(row=0, column=0, sticky='news', padx=(5,0), pady=(5,0))
-prog_loop_lb2       .grid(row=0, column=1, sticky='news', padx=(5,5), pady=(5,0))
+prog_loop_lb2       .grid(row=0, column=1, sticky='news', padx=(5,0), pady=(5,0))
 prog_element_lb1    .grid(row=1, column=0, sticky='news', padx=(5,0), pady=(5,0))
-prog_element_lb2    .grid(row=1, column=1, sticky='news', padx=(5,5), pady=(5,0))
+prog_element_lb2    .grid(row=1, column=1, sticky='news', padx=(5,0), pady=(5,0))
+
+
+####progress_lbframe
+save_load_lbframe   =tk.LabelFrame(window, text='Save/Load')
+save_btn            =tk.Button(save_load_lbframe, text='Save', width=6, height=2, command=saveFile)
+load_btn            =tk.Button(save_load_lbframe, text='Load', width=6, height=2, command=loadFile)
+####progress_lbframe GRID
+save_load_lbframe   .grid(row=0, column=5, sticky='news', padx=(5,0), pady=(5,0))
+save_btn            .grid(row=0, column=0, sticky='news', padx=(5,0), pady=(5,0))
+load_btn            .grid(row=0, column=1, sticky='news', padx=(5,0), pady=(5,0))
+
+
 
 
 ####set_target_lbframe
@@ -439,8 +474,8 @@ set_target_lbframe = tk.LabelFrame(window, text='Set Targets')
 #Act(chk_btn), No. , Select Func.(Mouse, Keyboard, Hotkey, Write Text), Mouse Func.(L-click, L-Down, L-Up, R-click, R-Down, R-Up, Double, Move, Drag), key Func.(Press, KeyDown, KeyUp), Key('a', 'b',...), Hotkey(Ctrl+A, Ctrl+C, Ctrl+V), Text, Delay
 #it will execute just what you Act checked
 #when you select Mouse, then M-Function menu will be activated
-act_lb          = tk.Label(set_target_lbframe, anchor='center', text='Act')
 no_lb           = tk.Label(set_target_lbframe, anchor='center', text='No.')
+act_lb          = tk.Label(set_target_lbframe, anchor='center', text='Act')
 select_func_lb  = tk.Label(set_target_lbframe, anchor='center', width=12, text='Select Func.')
 mouse_func_lb   = tk.Label(set_target_lbframe, anchor='center', width=12, text='Mouse Func.')
 key_func_lb     = tk.Label(set_target_lbframe, anchor='center', width=12, text='Key Func')
@@ -459,10 +494,10 @@ sep_v7          = ttk.Separator(set_target_lbframe, orient="vertical")
 sep_v8          = ttk.Separator(set_target_lbframe, orient="vertical")
 sep_h1          = ttk.Separator(set_target_lbframe, orient="horizontal")
 ####set_target_lbframe GRID
-set_target_lbframe  .grid(row=1, column=0, padx=(5,0), pady=(5,0), sticky='news', rowspan=999, columnspan=999)
-act_lb              .grid(row=0, column=0, padx=(5,5), pady=(5,0))
+set_target_lbframe  .grid(row=1, column=0, padx=(5,0), pady=(5,0), sticky='news', rowspan=999, columnspan=20)
+no_lb               .grid(row=0, column=0, padx=(5,5), pady=(5,0))
 sep_v1              .grid(row=0, column=1, sticky='ns', rowspan=999)
-no_lb               .grid(row=0, column=2, padx=(5,5), pady=(5,0))
+act_lb              .grid(row=0, column=2, padx=(5,5), pady=(5,0))
 sep_v2              .grid(row=0, column=3, sticky='ns', rowspan=999)
 select_func_lb      .grid(row=0, column=4, padx=(5,5), pady=(5,0))
 sep_v3              .grid(row=0, column=5, sticky='ns', rowspan=999)
@@ -503,6 +538,7 @@ def onlyNumbers(event):
 init_delay_entry.bind('<KeyRelease>', onlyNumbers)
 loop_entry.bind('<KeyRelease>', onlyNumbers)
 
+#thread stop hotkey
 keyboard.add_hotkey('ctrl+shift+space', threadStop)
 
 
