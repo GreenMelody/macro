@@ -13,7 +13,7 @@ from tkinter import filedialog
 
 window = tk.Tk()
 window.title('Tnank you for your help')
-window.geometry('1500x400+0+0')
+window.geometry('1000x400+0+0')
 window.resizable(True,True)
 
 font_15 = font.Font(size=15)
@@ -161,7 +161,7 @@ def threadStart():
         thd1_bool = False
     else:
         if(len(target_win_arr) < 1):
-            messagebox.showwarning(title='Not enough targets', message='Please add targets push the + button')
+            messagebox.showwarning(title='No Targets', message='Please add targets push the + button')
         else:
             print('thread start!')
             thd1_bool = True
@@ -325,6 +325,21 @@ def play():
     print('thread done!')
   
 
+def targetShowHide():
+    if(len(target_win_arr) == 0):
+        pass
+    else:
+        if(show_hide_chk_var.get()):
+            for item in target_win_arr:
+                item.deiconify()     #show target window
+            print('checked')
+        else:
+            for item in target_win_arr:
+                item.withdraw()
+            print('not checked')
+    
+
+
 #disable comboboxes not necessary 
 def actDeactWidgets(event):
     t_cnt = len(target_win_arr)
@@ -392,29 +407,32 @@ def saveFile():
                                           filetypes=(("Json", "*.json"),
                                           ("all files", "*.*")))
     saveCondition()
-    file_data = OrderedDict()
-    file_data['total_count']    = len(save_condition_arr)
-    file_data['init_delay']     = init_delay_entry.get()
-    file_data['loop']           = loop_entry.get()
+    if(len(save_condition_arr) == 0):
+        messagebox.showwarning(title='No Targets', message='Please add targets push the + button')
+    else:
+        file_data = OrderedDict()
+        file_data['total_count']    = len(save_condition_arr)
+        file_data['init_delay']     = init_delay_entry.get()
+        file_data['loop']           = loop_entry.get()
 
-    for idx, item in enumerate(save_condition_arr):
-        file_data[str(idx)] ={
-            'num' : item[0],            
-            'act_deact_chk'     : item[1],
-            'select_func'       : item[2],
-            'mouse_func'        : item[3],
-            'mouseX'            : item[4],
-            'mouseY'            : item[5],
-            'key_func'          : item[6],
-            'key_combo'         : item[7],
-            'hotkey'            : item[8],
-            'text_ent'          : item[9],
-            'delay_ent'         : int(item[10]*1000),
-            'target_win_posX'   : item[11],
-            'target_win_posY'   : item[12]
-            }
-    with open(filename, 'w', encoding='utf-8') as make_file:
-        json.dump(file_data, make_file, ensure_ascii=False, indent='\t')
+        for idx, item in enumerate(save_condition_arr):
+            file_data[str(idx)] ={
+                'num' : item[0],            
+                'act_deact_chk'     : item[1],
+                'select_func'       : item[2],
+                'mouse_func'        : item[3],
+                'mouseX'            : item[4],
+                'mouseY'            : item[5],
+                'key_func'          : item[6],
+                'key_combo'         : item[7],
+                'hotkey'            : item[8],
+                'text_ent'          : item[9],
+                'delay_ent'         : int(item[10]*1000),
+                'target_win_posX'   : item[11],
+                'target_win_posY'   : item[12]
+                }
+        with open(filename, 'w', encoding='utf-8') as make_file:
+            json.dump(file_data, make_file, ensure_ascii=False, indent='\t')
 
 #load json file 
 def loadFile():
@@ -490,10 +508,10 @@ loop_entry          = tk.Entry(set_init_lbframe, justify='right', width=8)
 ####set_init GRID
 set_init_lbframe    .grid(row=0, column=0, padx=(5,0), pady=(5,0), sticky='news')
 init_delay_lb       .grid(row=0, column=0, padx=(5,0), pady=(5,0))
-init_delay_entry    .grid(row=0, column=1, padx=(5,0), pady=(5,0))
+init_delay_entry    .grid(row=0, column=1, padx=(5,5), pady=(5,0))
 init_delay_entry    .insert(0,'1000')
 loop_lb             .grid(row=1, column=0, padx=(5,0), pady=(5,5), sticky='ew')
-loop_entry          .grid(row=1, column=1, padx=(5,0), pady=(5,5))
+loop_entry          .grid(row=1, column=1, padx=(5,5), pady=(5,5))
 loop_entry          .insert(0,'1')
 
 
@@ -504,7 +522,7 @@ del_target_btn      = tk.Button(add_target_lbframe, text='-', width=3, height=1,
 ####add_target_lbframe GRID
 add_target_lbframe  .grid(row=0, column=1, sticky='news', padx=(5,0), pady=(5,0))
 add_target_btn      .grid(row=0, column=0, sticky='news', padx=(5,0), pady=(5,0))
-del_target_btn      .grid(row=0, column=1, sticky='news', padx=(5,0), pady=(5,0))
+del_target_btn      .grid(row=0, column=1, sticky='news', padx=(5,5), pady=(5,0))
 
 
 ####Start_lbframe
@@ -512,14 +530,14 @@ start_lbframe       = tk.LabelFrame(window, text='Start')
 start_btn           = tk.Button(start_lbframe, text='▶', width=3, height=1, font=font_15_bold, command=threadStart)
 ####Start_lbframe GRID
 start_lbframe       .grid(row=0, column=2, sticky='news', padx=(5,0), pady=(5,0))
-start_btn           .grid(row=0, column=0, sticky='news', padx=(5,0), pady=(5,0))
+start_btn           .grid(row=0, column=0, sticky='news', padx=(5,5), pady=(5,0))
 
 
 ####Stop_lbframe
 stop_lbframe        = tk.LabelFrame(window, text='Stop')
 stop_lb1            = tk.Label(stop_lbframe, text='Push ''▶'' button OR', anchor='w')
 stop_lb2            = tk.Label(stop_lbframe, text='Ctrl+Shift+Space', anchor='w')
-####Start_lbframe GRID
+####Stop_lbframe GRID
 stop_lbframe       .grid(row=0, column=3, sticky='news', padx=(5,0), pady=(5,0))
 stop_lb1            .grid(row=0, column=0, sticky='news', padx=(5,0), pady=(5,0))
 stop_lb2            .grid(row=1, column=0, sticky='news', padx=(5,0), pady=(0,0))
@@ -539,16 +557,24 @@ prog_element_lb1    .grid(row=1, column=0, sticky='news', padx=(5,0), pady=(5,0)
 prog_element_lb2    .grid(row=1, column=1, sticky='news', padx=(5,0), pady=(5,0))
 
 
-####progress_lbframe
+####save_load_lbframe
 save_load_lbframe   =tk.LabelFrame(window, text='Save/Load')
 save_btn            =tk.Button(save_load_lbframe, text='Save', width=6, height=2, command=saveFile)
 load_btn            =tk.Button(save_load_lbframe, text='Load', width=6, height=2, command=loadFile)
-####progress_lbframe GRID
+####save_load_lbframe GRID
 save_load_lbframe   .grid(row=0, column=5, sticky='news', padx=(5,0), pady=(5,0))
 save_btn            .grid(row=0, column=0, sticky='news', padx=(5,0), pady=(5,0))
-load_btn            .grid(row=0, column=1, sticky='news', padx=(5,0), pady=(5,0))
+load_btn            .grid(row=0, column=1, sticky='news', padx=(5,5), pady=(5,0))
 
 
+####show_hide_lbframe
+show_hide_lbframe   =tk.LabelFrame(window, text='Show/Hide')
+show_hide_chk_var   =tk.IntVar()
+show_hide_chk_btn   =ttk.Checkbutton(show_hide_lbframe, text='Show/Hide', variable=show_hide_chk_var, command=targetShowHide)
+####show_hide_lbframe GRID
+show_hide_lbframe   .grid(row=0, column=6, sticky='news', padx=(5,0), pady=(5,0))
+show_hide_chk_btn   .grid(row=0, column=0, sticky='news', padx=(5,0), pady=(5,0))
+show_hide_chk_var   .set(1)
 
 
 ####set_target_lbframe
