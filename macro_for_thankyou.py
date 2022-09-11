@@ -331,15 +331,34 @@ init_delay_lb       = tk.Label(set_init_lbframe, justify='right', text='Init del
 init_delay_entry    = tk.Entry(set_init_lbframe, justify='right', width=8)
 loop_lb             = tk.Label(set_init_lbframe, justify='right', text='Loop : ', bg='red')
 loop_entry          = tk.Entry(set_init_lbframe, justify='right', width=8)
-
 ####set_init GRID
-set_init_lbframe    .grid(row=0, column=0, padx=(5,5), pady=(5,0), sticky='nws')
+set_init_lbframe    .grid(row=0, column=0, padx=(5,0), pady=(5,0), sticky='nws')
 init_delay_lb       .grid(row=0, column=0, padx=(5,5), pady=(5,5))
 init_delay_entry    .grid(row=0, column=1, padx=(5,5), pady=(5,0))
 init_delay_entry    .insert(0,'1000')
 loop_lb             .grid(row=1, column=0, padx=(5,5), pady=(5,0), sticky='ew')
 loop_entry          .grid(row=1, column=1, padx=(5,5), pady=(5,5))
 loop_entry          .insert(0,'1')
+
+
+####add_target_lbframe
+add_target_lbframe = tk.LabelFrame(window, text='Add/Del Targets')
+add_target_btn = tk.Button(add_target_lbframe, text='+', width=2, height=1, font=font_15_bold, command=makeTarget) #command=lambda: command_args(arg1, arg2, arg3)
+del_target_btn = tk.Button(add_target_lbframe, text='-', width=2, height=1, font=font_15_bold, command=delTarget) #command=lambda: command_args(arg1, arg2, arg3)
+####add_target_lbframe GRID
+add_target_lbframe  .grid(row=0, column=1, sticky='news', padx=(5,0), pady=(5,0))
+add_target_btn      .grid(row=0, column=2)
+del_target_btn      .grid(row=0, column=9)
+
+
+####Start_lbframe
+start_lbframe       = tk.LabelFrame(window, text='Start/Stop')
+test2_btn = tk.Button(start_lbframe, text='get target point', command=saveCondition)
+start_btn = tk.Button(start_lbframe, text='Start', command=threadStart)
+####Start_lbframe GRID
+start_lbframe       .grid(row=0, column=2, sticky='news', padx=(5,0), pady=(5,0))
+test2_btn           .grid(row=0, column=2)
+start_btn           .grid(row=0, column=9)
 
 ####set_target_lbframe
 set_target_lbframe = tk.LabelFrame(window, text='Set Targets')
@@ -367,7 +386,7 @@ sep_v8          = ttk.Separator(set_target_lbframe, orient="vertical")
 sep_h1          = ttk.Separator(set_target_lbframe, orient="horizontal")
 
 ####set_target_lbframe GRID
-set_target_lbframe  .grid(row=1, column=0, padx=(5,0), pady=(5,0), sticky='news', rowspan=999)
+set_target_lbframe  .grid(row=1, column=0, padx=(5,0), pady=(5,0), sticky='news', rowspan=999, columnspan=999)
 act_lb              .grid(row=0, column=0, padx=(5,5), pady=(5,0))
 sep_v1              .grid(row=0, column=1, sticky='ns', rowspan=999)
 no_lb               .grid(row=0, column=2, padx=(5,5), pady=(5,0))
@@ -389,19 +408,7 @@ sep_h1              .grid(row=1, column=0, sticky='ew', columnspan=17)
 
 
 
-####add_target_lbframe
-add_target_lbframe = tk.LabelFrame(window, text='Add/Del Targets')
-add_target_btn = tk.Button(add_target_lbframe, text='+', width=2, height=1, font=font_15_bold, command=makeTarget) #command=lambda: command_args(arg1, arg2, arg3)
-del_target_btn = tk.Button(add_target_lbframe, text='-', width=2, height=1, font=font_15_bold, command=delTarget) #command=lambda: command_args(arg1, arg2, arg3)
 
-####add_target_lbframe GRID
-add_target_lbframe  .grid(row=0, column=1, sticky='news', padx=(5,0), pady=(5,0))
-add_target_btn      .grid(row=0, column=2)
-del_target_btn      .grid(row=0, column=9)
-
-
-test2_btn = tk.Button(add_target_lbframe, text='get target point', command=saveCondition)
-test3_btn = tk.Button(add_target_lbframe, text='move to target point', command=threadStart)
 
 
 
@@ -411,9 +418,6 @@ test3_btn = tk.Button(add_target_lbframe, text='move to target point', command=t
 
 
 
-test2_btn.grid(row=2, column=0)
-test3_btn.grid(row=3, column=0)
-
 
 
 
@@ -421,13 +425,10 @@ test3_btn.grid(row=3, column=0)
 
 #only digit input
 def onlyNumbers(event):
-    print(event.keysym)
-    except_keys=['BackSpace', 'Escape','Caps_Lock','Shift_L','Control_L','Alt_L','Alt_L','Win_L','Win_R','App','Shift_L','Return',
+    except_keys=['0','1','2','3','4','5','6','7','8','9', 'BackSpace', 'Escape','Caps_Lock','Shift_L','Control_L','Alt_L','Alt_L','Win_L','Win_R','App','Shift_L','Return',
                     'F1','F2','F3','F4','F5','F6','F7','F8','F9','F10','F11','F12','Scroll_Lock','Pause','Insert',
                     'Home','Prior','Delete','End','Next','Num_Lock','Left','Down','Right','Up', '??']
-    if str.isdigit(event.keysym):
-        print('num'+ event.keysym)
-    elif(event.keysym in except_keys):
+    if(event.keysym in except_keys):
         pass
     else:
         txt = str(event.widget.get())
