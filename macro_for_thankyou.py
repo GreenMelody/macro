@@ -1,8 +1,10 @@
+from logging import exception
 import re
 import threading
 import time
 import json
 from collections import OrderedDict
+from turtle import title
 import pyautogui
 import tkinter as tk
 import tkinter.font as font
@@ -402,95 +404,105 @@ def allWidgetsActDeact():
     
 #save to json file
 def saveFile():
-    filename = filedialog.asksaveasfilename(initialdir="/", title="Save File",
-                                            filetypes=(("Json", "*.json"),
-                                            ("all files", "*.*")))
-    saveCondition()
-    if(len(save_condition_arr) == 0):
-        messagebox.showwarning(title='No Targets', message='Please add targets push the + button')
-    else:
-        file_data = OrderedDict()
-        file_data['total_count']    = len(save_condition_arr)
-        file_data['init_delay']     = init_delay_entry.get()
-        file_data['loop']           = loop_entry.get()
+    try:
+        filename = filedialog.asksaveasfilename(initialdir="/", title="Save File",
+                                                filetypes=(("Json", "*.json"),
+                                                ("all files", "*.*")))
+        saveCondition()
+        if(len(save_condition_arr) == 0):
+            messagebox.showwarning(title='No Targets', message='Please add targets push the + button')
+        else:
+            file_data = OrderedDict()
+            file_data['total_count']    = len(save_condition_arr)
+            file_data['init_delay']     = init_delay_entry.get()
+            file_data['loop']           = loop_entry.get()
 
-        for idx, item in enumerate(save_condition_arr):
-            file_data[str(idx)] ={
-                'num' : item[0],            
-                'act_deact_chk'     : item[1],
-                'select_func'       : item[2],
-                'mouse_func'        : item[3],
-                'mouseX'            : item[4],
-                'mouseY'            : item[5],
-                'key_func'          : item[6],
-                'key_combo'         : item[7],
-                'hotkey'            : item[8],
-                'text_ent'          : item[9],
-                'delay_ent'         : int(item[10]*1000),
-                'target_win_posX'   : item[11],
-                'target_win_posY'   : item[12]
-                }
-        with open(filename, 'w', encoding='utf-8') as make_file:
-            json.dump(file_data, make_file, ensure_ascii=False, indent='\t')
+            for idx, item in enumerate(save_condition_arr):
+                file_data[str(idx)] ={
+                    'num' : item[0],            
+                    'act_deact_chk'     : item[1],
+                    'select_func'       : item[2],
+                    'mouse_func'        : item[3],
+                    'mouseX'            : item[4],
+                    'mouseY'            : item[5],
+                    'key_func'          : item[6],
+                    'key_combo'         : item[7],
+                    'hotkey'            : item[8],
+                    'text_ent'          : item[9],
+                    'delay_ent'         : int(item[10]*1000),
+                    'target_win_posX'   : item[11],
+                    'target_win_posY'   : item[12]
+                    }
+            with open(filename, 'w', encoding='utf-8') as make_file:
+                json.dump(file_data, make_file, ensure_ascii=False, indent='\t')
+                messagebox.showinfo(title='Success', message='File saved successfully')
+    except Exception as e:
+        messagebox.showwarning(title='Warning', message=e)
+        print('file save error :', e)  
 
 #load json file 
 def loadFile():
-    filename = filedialog.askopenfilename(initialdir="/", title="Select file",
-                                            filetypes=(("Json", "*.json"),
-                                            ("all files", "*.*")))
-    with open(filename, 'r', encoding='utf-8') as load_file:
-        load_data = json.load(load_file)
-    
-    total_count = load_data["total_count"]
-    init_delay  = load_data["init_delay"]
-    loop        = load_data["loop"]
-    init_delay_entry.delete(0, tk.END)
-    init_delay_entry.insert(0, init_delay)
-    loop_entry      .delete(0, tk.END)
-    loop_entry      .insert(0, loop)
-
-    t_cnt = len(target_win_arr)
-    for idx in range(0, t_cnt):  delTarget()
+    try:
+        filename = filedialog.askopenfilename(initialdir="/", title="Select file",
+                                                filetypes=(("Json", "*.json"),
+                                                ("all files", "*.*")))
+        with open(filename, 'r', encoding='utf-8') as load_file:
+            load_data = json.load(load_file)
         
-    for idx in range(0, total_count):
-        #set act_deact chk
-        if(load_data[str(idx)]["act_deact_chk"]):
-            act_deact=1
-        else:
-            act_deact=0
+        total_count = load_data["total_count"]
+        init_delay  = load_data["init_delay"]
+        loop        = load_data["loop"]
+        init_delay_entry.delete(0, tk.END)
+        init_delay_entry.insert(0, init_delay)
+        loop_entry      .delete(0, tk.END)
+        loop_entry      .insert(0, loop)
 
-        #set select_func
-        for idx_sel, item in enumerate(select_func_list):
-            if(item == load_data[str(idx)]["select_func"]):
-                select_func = idx_sel
-        
-        #set mouse_func
-        for idx_sel, item in enumerate(mouse_func_list):
-            if(item == load_data[str(idx)]["mouse_func"]):
-                mouse_func = idx_sel
-        
-        #set key_func
-        for idx_sel, item in enumerate(key_func_list):
-            if(item == load_data[str(idx)]["key_func"]):
-                key_func = idx_sel
+        t_cnt = len(target_win_arr)
+        for idx in range(0, t_cnt):  delTarget()
+            
+        for idx in range(0, total_count):
+            #set act_deact chk
+            if(load_data[str(idx)]["act_deact_chk"]):
+                act_deact=1
+            else:
+                act_deact=0
 
-        #set key_combo
-        for idx_sel, item in enumerate(key_list):
-            if(item == load_data[str(idx)]["key_combo"]):
-                key_combo = idx_sel
+            #set select_func
+            for idx_sel, item in enumerate(select_func_list):
+                if(item == load_data[str(idx)]["select_func"]):
+                    select_func = idx_sel
+            
+            #set mouse_func
+            for idx_sel, item in enumerate(mouse_func_list):
+                if(item == load_data[str(idx)]["mouse_func"]):
+                    mouse_func = idx_sel
+            
+            #set key_func
+            for idx_sel, item in enumerate(key_func_list):
+                if(item == load_data[str(idx)]["key_func"]):
+                    key_func = idx_sel
 
-        #set hotkey
-        for idx_sel, item in enumerate(hotkey_list):
-            if(item == load_data[str(idx)]["hotkey"]):
-                hotkey = idx_sel
+            # set key_combo
+            key_combo=0
+            for idx_sel, item in enumerate(key_list):
+                if(item == load_data[str(idx)]["key_combo"]):
+                    key_combo = idx_sel
 
-        text_ent    = load_data[str(idx)]["text_ent"]
-        delay_ent   = load_data[str(idx)]["delay_ent"]
-        target_win_posX = load_data[str(idx)]["target_win_posX"]
-        target_win_posY = load_data[str(idx)]["target_win_posY"]
+            #set hotkey
+            for idx_sel, item in enumerate(hotkey_list):
+                if(item == load_data[str(idx)]["hotkey"]):
+                    hotkey = idx_sel
 
-        makeTarget(act_deact, select_func, mouse_func, key_func, key_combo, hotkey, text_ent, delay_ent, target_win_posX, target_win_posY)
+            text_ent    = load_data[str(idx)]["text_ent"]
+            delay_ent   = load_data[str(idx)]["delay_ent"]
+            target_win_posX = load_data[str(idx)]["target_win_posX"]
+            target_win_posY = load_data[str(idx)]["target_win_posY"]
 
+            makeTarget(act_deact, select_func, mouse_func, key_func, key_combo, hotkey, text_ent, delay_ent, target_win_posX, target_win_posY)
+        messagebox.showinfo(title='Success', message='File load successfully')
+    except Exception as e:
+        messagebox.showwarning(title='Warning', message=e)
+        print('file save error :', e)
 
 
 #################################  UI using tkinter
@@ -627,31 +639,8 @@ def onlyNumbers(event):
     event.widget.delete(0,'end')
     event.widget.insert(0, txt)
 
-    # except_keys=['0','1','2','3','4','5','6','7','8','9']
-    # txt = event.widget.get()
-    # for idx, item in enumerate(txt):
-        # if(not(event.keysym in except_keys)):
-
-    # event.widget.delete(0,'end')
-    # event.widget.insert(0, txt[:-1])
-
-
-
-    # print(event.keysym)
-    # except_keys=['0','1','2','3','4','5','6','7','8','9', 
-    #                 'BackSpace', 'Escape','Caps_Lock','Shift_L','Control_L',
-    #                 'Alt_L','Alt_L','Win_L','Win_R','App','Shift_L','Return',
-    #                 'F1','F2','F3','F4','F5','F6','F7','F8','F9','F10','F11','F12','Scroll_Lock','Pause','Insert',
-    #                 'Home','Prior','Delete','End','Next','Num_Lock','Left','Down','Right','Up', '??']
-    # if(event.keysym in except_keys):
-    #     pass
-    # else:
-    #     txt = str(event.widget.get())
-    #     event.widget.delete(0,'end')
-    #     event.widget.insert(0, txt[:-1])
-
 #only digit input
-init_delay_entry.bind('<Key>', onlyNumbers)
+init_delay_entry.bind('<KeyRelease>', onlyNumbers)
 loop_entry      .bind('<KeyRelease>', onlyNumbers)
 
 #thread stop hotkey
