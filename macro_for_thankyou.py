@@ -1,3 +1,4 @@
+import re
 import threading
 import time
 import json
@@ -295,8 +296,6 @@ def play():
                 elif(item[2] == 'Hotkey'):
                     spl = item[8].split('+')
                     if(len(spl) == 2):
-                        print('hotkey2')
-                        print(spl[0],' , ', spl[1])
                         pyautogui.hotkey(spl[0], spl[1])
                     elif(len(spl) == 3):
                         pyautogui.hotkey(spl[0], spl[1], spl[2])
@@ -454,7 +453,6 @@ def loadFile():
     for idx in range(0, t_cnt):  delTarget()
         
     for idx in range(0, total_count):
-        print('===', idx)
         #set act_deact chk
         if(load_data[str(idx)]["act_deact_chk"]):
             act_deact=1
@@ -624,20 +622,36 @@ sep_h1              .grid(row=1, column=0, sticky='ew', columnspan=17)
 
 #only digit input
 def onlyNumbers(event):
-    except_keys=['0','1','2','3','4','5','6','7','8','9', 
-                    'BackSpace', 'Escape','Caps_Lock','Shift_L','Control_L',
-                    'Alt_L','Alt_L','Win_L','Win_R','App','Shift_L','Return',
-                    'F1','F2','F3','F4','F5','F6','F7','F8','F9','F10','F11','F12','Scroll_Lock','Pause','Insert',
-                    'Home','Prior','Delete','End','Next','Num_Lock','Left','Down','Right','Up', '??']
-    if(event.keysym in except_keys):
-        pass
-    else:
-        txt = str(event.widget.get())
-        event.widget.delete(0,'end')
-        event.widget.insert(0, txt[:-1])
+    txt = event.widget.get()
+    txt = re.sub(r"[^0-9]", "", txt)
+    event.widget.delete(0,'end')
+    event.widget.insert(0, txt)
+
+    # except_keys=['0','1','2','3','4','5','6','7','8','9']
+    # txt = event.widget.get()
+    # for idx, item in enumerate(txt):
+        # if(not(event.keysym in except_keys)):
+
+    # event.widget.delete(0,'end')
+    # event.widget.insert(0, txt[:-1])
+
+
+
+    # print(event.keysym)
+    # except_keys=['0','1','2','3','4','5','6','7','8','9', 
+    #                 'BackSpace', 'Escape','Caps_Lock','Shift_L','Control_L',
+    #                 'Alt_L','Alt_L','Win_L','Win_R','App','Shift_L','Return',
+    #                 'F1','F2','F3','F4','F5','F6','F7','F8','F9','F10','F11','F12','Scroll_Lock','Pause','Insert',
+    #                 'Home','Prior','Delete','End','Next','Num_Lock','Left','Down','Right','Up', '??']
+    # if(event.keysym in except_keys):
+    #     pass
+    # else:
+    #     txt = str(event.widget.get())
+    #     event.widget.delete(0,'end')
+    #     event.widget.insert(0, txt[:-1])
 
 #only digit input
-init_delay_entry.bind('<KeyRelease>', onlyNumbers)
+init_delay_entry.bind('<Key>', onlyNumbers)
 loop_entry      .bind('<KeyRelease>', onlyNumbers)
 
 #thread stop hotkey
