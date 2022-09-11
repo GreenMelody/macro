@@ -159,7 +159,12 @@ def threadStart():
         else:
             print('thread start!')
             thd1_bool = True
+            start_btn.config(bg='red')
             thd1.start()
+
+def threadStop():
+    global thd1_bool
+    thd1_bool = False
 
 #check incorrect values
 def checkValues():
@@ -211,7 +216,6 @@ def saveCondition():
         
     for item in save_condition_arr:
         print(item)
-
     play()
 
 
@@ -221,9 +225,8 @@ def play():
     loop = loop_entry.get()
     init_delay = init_delay_entry.get()
 
-    
-
     loop = int(loop)
+
     #init delay
     init_delay = int(init_delay_entry.get()) /1000
     time.sleep(init_delay)
@@ -232,6 +235,7 @@ def play():
         #show loop progress
         prog_loop_lb2.config(text=str(idx_lp).zfill(3) + '/' + str(loop).zfill(3))
         for idx, item in enumerate(save_condition_arr):
+            if(thd1_bool == False): break
             #show loop progress
             prog_element_lb2.config(text=str(idx+1).zfill(3) + '/' + str(len(save_condition_arr)).zfill(3))
 
@@ -257,7 +261,7 @@ def play():
                     elif(item[3] == 'Move'):
                         pyautogui.moveTo(item[4], item[5])
                     elif(item[3] == 'Drag'):
-                        pyautogui.dragTo(item[4], item[5], 1, button='left')
+                        pyautogui.dragTo(item[4], item[5], 0.5, button='left')
                     else:
                         print('somethings wrong (mouse)')
                     
@@ -288,8 +292,11 @@ def play():
                 else:
                     print('somethings wrong 1')
 
-                if(thd1_bool == False): break
-                time.sleep(item[10])
+                if(thd1_bool == False):
+                    target_lb2_arr[idx]['text']='+'
+                    break
+                else:
+                    time.sleep(item[10])
 
             else:
                 print('somethings wrong 2')
@@ -300,6 +307,7 @@ def play():
 
     thd1_bool = False
     allWidgetsActDeact()
+    start_btn.config(bg='#F0F0F0')
     print('thread done!')
   
 
@@ -394,9 +402,9 @@ loop_entry          .insert(0,'1')
 
 
 ####add_target_lbframe
-add_target_lbframe = tk.LabelFrame(window, text='Add/Del Targets')
-add_target_btn = tk.Button(add_target_lbframe, text='+', width=3, height=1, font=font_15_bold, command=makeTarget) #command=lambda: command_args(arg1, arg2, arg3)
-del_target_btn = tk.Button(add_target_lbframe, text='-', width=3, height=1, font=font_15_bold, command=delTarget) #command=lambda: command_args(arg1, arg2, arg3)
+add_target_lbframe  = tk.LabelFrame(window, text='Add/Del Targets')
+add_target_btn      = tk.Button(add_target_lbframe, text='+', width=3, height=1, font=font_15_bold, command=makeTarget) #command=lambda: command_args(arg1, arg2, arg3)
+del_target_btn      = tk.Button(add_target_lbframe, text='-', width=3, height=1, font=font_15_bold, command=delTarget) #command=lambda: command_args(arg1, arg2, arg3)
 ####add_target_lbframe GRID
 add_target_lbframe  .grid(row=0, column=1, sticky='news', padx=(5,0), pady=(5,0))
 add_target_btn      .grid(row=0, column=0, sticky='news', padx=(5,0), pady=(5,0))
@@ -405,7 +413,7 @@ del_target_btn      .grid(row=0, column=1, sticky='news', padx=(5,5), pady=(5,0)
 
 ####Start_lbframe
 start_lbframe       = tk.LabelFrame(window, text='Start/Stop')
-start_btn = tk.Button(start_lbframe, text='Start', width=7, height=2, command=threadStart)
+start_btn           = tk.Button(start_lbframe, text='▶', width=7, height=2, command=threadStart)
 ####Start_lbframe GRID
 start_lbframe       .grid(row=0, column=2, sticky='news', padx=(5,0), pady=(5,0))
 start_btn           .grid(row=0, column=1, sticky='news', padx=(5,5), pady=(5,0))
@@ -491,12 +499,13 @@ def onlyNumbers(event):
         event.widget.delete(0,'end')
         event.widget.insert(0, txt[:-1])
 
-
-
-
 #only digit input
 init_delay_entry.bind('<KeyRelease>', onlyNumbers)
 loop_entry.bind('<KeyRelease>', onlyNumbers)
+
+keyboard.add_hotkey('ctrl+shift+space', threadStop)
+
+
 
 # 종료시 호출
 def on_closing():
