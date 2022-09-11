@@ -7,7 +7,7 @@ import tkinter as tk
 import tkinter.font as font
 import tkinter.ttk as ttk
 import keyboard
-from tkinter import messagebox
+from tkinter import END, messagebox
 from tkinter import filedialog
 
 
@@ -35,28 +35,28 @@ save_condition_arr=[]       #save all things, [num, act_deact, select_func, mous
 t_cnt=0                     #total target window number
 target_win_arr=[]           #save target windows
 target_lb1_arr=[]           #target number label
-target_lb2_arr=[]               #'+' label 
+target_lb2_arr=[]           #'+' label 
 act_chk_btn_arr=[]          #act/deactive check box 
 chk_var=[]                  #save checked or not(1 or 0) for act_chk_btn
 no_lb_arr=[]                #number of list
 select_func_combo_arr=[]    #select function(mouse, keyboard, hotkey, text)
-mouse_func_combo_arr=[]     
+mouse_func_combo_arr=[]     #mouse function
 key_func_combo_arr=[]
 key_combo_arr=[]
 hotkey_combo_arr=[]
 text_entry_arr=[]
 delay_entry_arr=[]
 
-thd1_bool = False
+thd1_bool = False           #thread boolean
 
 #make new target window
-def makeTarget():
-    #make new window and setting
+def makeTarget(act_deact = 1, select_func=0, mouse_func=0, key_func=0, key_combo=0, hotkey=0, text_ent='', delay_ent='1000', target_win_posX='0', target_win_posY='0'):
     t_cnt = len(target_win_arr)
+    #make new window and setting
     target_win_arr.append(tk.Toplevel(window))
     target_win_arr[t_cnt].wm_attributes("-topmost", True)
     target_win_arr[t_cnt].wm_attributes("-transparentcolor", '#F0F0F0')      #to make window transparent
-    target_win_arr[t_cnt].geometry('150x100')
+    target_win_arr[t_cnt].geometry('150x100' + '+' + target_win_posX + '+' + target_win_posY)
     target_win_arr[t_cnt].overrideredirect(True)
 
     #show target num and target point '+'
@@ -88,14 +88,16 @@ def makeTarget():
     text_entry_arr          [t_cnt].grid(row=t_cnt+2, column=14, padx=(5,5), pady=(5,0))
     delay_entry_arr         [t_cnt].grid(row=t_cnt+2, column=16, padx=(5,5), pady=(5,0))
 
-    chk_var                 [t_cnt].set(1)                       #always checked when it created
-    select_func_combo_arr   [t_cnt].current(0)     #select first value
-    mouse_func_combo_arr    [t_cnt].current(0)     #select first value
-    key_func_combo_arr      [t_cnt].current(0)     #select first value
-    key_combo_arr           [t_cnt].current(0)     #select first value
-    hotkey_combo_arr        [t_cnt].current(0)     #select first value
-    delay_entry_arr         [t_cnt].delete(0,tk.END)
-    delay_entry_arr         [t_cnt].insert(0,'1000')
+    chk_var                 [t_cnt].set(act_deact)              #always checked when it created
+    select_func_combo_arr   [t_cnt].current(select_func)        #select first value
+    mouse_func_combo_arr    [t_cnt].current(mouse_func)         #select first value
+    key_func_combo_arr      [t_cnt].current(key_func)           #select first value
+    key_combo_arr           [t_cnt].current(key_combo)          #select first value
+    hotkey_combo_arr        [t_cnt].current(hotkey)             #select first value
+    text_entry_arr          [t_cnt].delete(0, tk.END)
+    text_entry_arr          [t_cnt].insert(0, text_ent)
+    delay_entry_arr         [t_cnt].delete(0, tk.END)
+    delay_entry_arr         [t_cnt].insert(0, delay_ent)
     actDeactWidgets('')
 
     #to move target point using mouse drag
@@ -214,22 +216,33 @@ def saveCondition():
         text_ent    = text_entry_arr[idx].get()
         delay_ent   = delay_entry_arr[idx].get()
         delay_ent   = int(delay_ent) / 1000
-        target_win_posX = target_win_arr[idx].winfo_rootx()
-        target_win_posY = target_win_arr[idx].winfo_rooty()
+        target_win_posX = str(target_win_arr[idx].winfo_rootx())
+        target_win_posY = str(target_win_arr[idx].winfo_rooty())
 
         save_condition_arr.append([num, act_deact, select_func, mouse_func, mouseX, mouseY, key_func, key_combo, hotkey, text_ent, delay_ent, target_win_posX, target_win_posY])
         
     for item in save_condition_arr:
         print(item)
-    play()
 
+    if(thd1_bool):
+        play()
+
+def targetCrossActDeact(show):
+    if(show):
+        cnt = len(target_lb2_arr)
+        for idx_lb in range(0, cnt):
+            target_lb2_arr[idx_lb]['text']='+'
+    else:
+        cnt = len(target_lb2_arr)
+        for idx_lb in range(0, cnt):
+            target_lb2_arr[idx_lb]['text']='+'
 
 def play():
     global thd1_bool
+    targetCrossActDeact(False)
 
     loop = loop_entry.get()
     init_delay = init_delay_entry.get()
-
     loop = int(loop)
 
     #init delay
@@ -243,8 +256,6 @@ def play():
             if(thd1_bool == False): break
             #show loop progress
             prog_element_lb2.config(text=str(idx+1).zfill(3) + '/' + str(len(save_condition_arr)).zfill(3))
-
-            target_lb2_arr[idx]['text']=''
             if(item[1] == 1):   #act_chkbtn is checked
                 if(item[2] == 'Mouse'):
                     if(item[3] == 'L-Click'):
@@ -298,7 +309,6 @@ def play():
                     print('somethings wrong 1')
 
                 if(thd1_bool == False):
-                    target_lb2_arr[idx]['text']='+'
                     break
                 else:
                     time.sleep(item[10])
@@ -306,12 +316,11 @@ def play():
             else:
                 print('somethings wrong 2')
 
-            target_lb2_arr[idx]['text']='+'
-
         if(thd1_bool == False): break
 
     thd1_bool = False
     allWidgetsActDeact()
+    targetCrossActDeact(True)
     start_btn.config(bg='#F0F0F0')
     print('thread done!')
   
@@ -321,41 +330,41 @@ def actDeactWidgets(event):
     t_cnt = len(target_win_arr)
     for idx in range(0, t_cnt):
         if(select_func_combo_arr[idx].get() == 'Mouse'):
-            select_func_combo_arr[idx].config(state='readonly')
-            mouse_func_combo_arr[idx].config(state='readonly')
-            key_func_combo_arr[idx].config(state='disabled')
-            key_combo_arr[idx].config(state='disabled')
-            hotkey_combo_arr[idx].config(state='disabled')
-            text_entry_arr[idx].config(state='readonly')
-            delay_entry_arr[idx].config(stat='normal')
-            target_win_arr[idx].deiconify()     #show target window
+            select_func_combo_arr   [idx].config(state='readonly')
+            mouse_func_combo_arr    [idx].config(state='readonly')
+            key_func_combo_arr      [idx].config(state='disabled')
+            key_combo_arr           [idx].config(state='disabled')
+            hotkey_combo_arr        [idx].config(state='disabled')
+            text_entry_arr          [idx].config(state='readonly')
+            delay_entry_arr         [idx].config(stat='normal')
+            target_win_arr          [idx].deiconify()     #show target window
         elif(select_func_combo_arr[idx].get() == 'Keyboard'):
-            select_func_combo_arr[idx].config(state='readonly')
-            mouse_func_combo_arr[idx].config(state='disabled')
-            key_func_combo_arr[idx].config(state='readonly')
-            key_combo_arr[idx].config(state='readonly')
-            hotkey_combo_arr[idx].config(state='disabled')
-            text_entry_arr[idx].config(state='readonly')
-            delay_entry_arr[idx].config(stat='normal')
-            target_win_arr[idx].withdraw()     #hide target window
+            select_func_combo_arr   [idx].config(state='readonly')
+            mouse_func_combo_arr    [idx].config(state='disabled')
+            key_func_combo_arr      [idx].config(state='readonly')
+            key_combo_arr           [idx].config(state='readonly')
+            hotkey_combo_arr        [idx].config(state='disabled')
+            text_entry_arr          [idx].config(state='readonly')
+            delay_entry_arr         [idx].config(stat='normal')
+            target_win_arr          [idx].withdraw()     #hide target window
         elif(select_func_combo_arr[idx].get() == 'Hotkey'):
-            select_func_combo_arr[idx].config(state='readonly')
-            mouse_func_combo_arr[idx].config(state='disabled')
-            key_func_combo_arr[idx].config(state='disabled')
-            key_combo_arr[idx].config(state='disabled')
-            hotkey_combo_arr[idx].config(state='readonly')
-            text_entry_arr[idx].config(state='readonly')
-            delay_entry_arr[idx].config(stat='normal')
-            target_win_arr[idx].withdraw()     #hide target window
+            select_func_combo_arr   [idx].config(state='readonly')
+            mouse_func_combo_arr    [idx].config(state='disabled')
+            key_func_combo_arr      [idx].config(state='disabled')
+            key_combo_arr           [idx].config(state='disabled')
+            hotkey_combo_arr        [idx].config(state='readonly')
+            text_entry_arr          [idx].config(state='readonly')
+            delay_entry_arr         [idx].config(stat='normal')
+            target_win_arr          [idx].withdraw()     #hide target window
         elif(select_func_combo_arr[idx].get() == 'WriteText'):
-            select_func_combo_arr[idx].config(state='readonly')
-            mouse_func_combo_arr[idx].config(state='disabled')
-            key_func_combo_arr[idx].config(state='disabled')
-            key_combo_arr[idx].config(state='disabled')
-            hotkey_combo_arr[idx].config(state='disabled')
-            text_entry_arr[idx].config(state='normal')
-            delay_entry_arr[idx].config(stat='normal')
-            target_win_arr[idx].withdraw()     #hide target window
+            select_func_combo_arr   [idx].config(state='readonly')
+            mouse_func_combo_arr    [idx].config(state='disabled')
+            key_func_combo_arr      [idx].config(state='disabled')
+            key_combo_arr           [idx].config(state='disabled')
+            hotkey_combo_arr        [idx].config(state='disabled')
+            text_entry_arr          [idx].config(state='normal')
+            delay_entry_arr         [idx].config(stat='normal')
+            target_win_arr          [idx].withdraw()     #hide target window
         
        
 #when thread is running, all of widgets are Deactivated
@@ -377,24 +386,96 @@ def allWidgetsActDeact():
         loop_entry.config(state='normal')
         actDeactWidgets('')
     
-
+#save to json file
 def saveFile():
     filename = filedialog.asksaveasfilename(initialdir="/", title="Save File",
-                                          filetypes=(("Json", "*.json"),("Text", "*.txt"), 
+                                          filetypes=(("Json", "*.json"),
                                           ("all files", "*.*")))
-    for idx, item in enumerate(save_condition_arr):
-        file_data['act_deact_chk'] = act
-    print(filename)
+    saveCondition()
+    file_data = OrderedDict()
+    file_data['total_count']    = len(save_condition_arr)
+    file_data['init_delay']     = init_delay_entry.get()
+    file_data['loop']           = loop_entry.get()
 
+    for idx, item in enumerate(save_condition_arr):
+        file_data[str(idx)] ={
+            'num' : item[0],            
+            'act_deact_chk'     : item[1],
+            'select_func'       : item[2],
+            'mouse_func'        : item[3],
+            'mouseX'            : item[4],
+            'mouseY'            : item[5],
+            'key_func'          : item[6],
+            'key_combo'         : item[7],
+            'hotkey'            : item[8],
+            'text_ent'          : item[9],
+            'delay_ent'         : int(item[10]*1000),
+            'target_win_posX'   : item[11],
+            'target_win_posY'   : item[12]
+            }
+    with open(filename, 'w', encoding='utf-8') as make_file:
+        json.dump(file_data, make_file, ensure_ascii=False, indent='\t')
+
+#load json file 
 def loadFile():
     filename = filedialog.askopenfilename(initialdir="/", title="Select file",
-                                          filetypes=(("Json", "*.json"),("Text", "*.txt"),
+                                          filetypes=(("Json", "*.json"),
                                           ("all files", "*.*")))
-    print(filename)
+    with open(filename, 'r', encoding='utf-8') as load_file:
+        load_data = json.load(load_file)
+    
+    total_count = load_data["total_count"]
+    init_delay = load_data["init_delay"]
+    loop = load_data["loop"]
+    init_delay_entry.delete(0, tk.END)
+    init_delay_entry.insert(0, init_delay)
+    loop_entry.delete(0, tk.END)
+    loop_entry.insert(0, loop)
 
+    t_cnt = len(target_win_arr)
+    for idx in range(0, t_cnt):  delTarget()
+        
+    for idx in range(0, total_count):
+        print('===', idx)
+        #set act_deact chk
+        if(load_data[str(idx)]["act_deact_chk"]):
+            act_deact=1
+        else:
+            act_deact=0
 
+        #set select_func
+        for idx_sel, item in enumerate(select_func_list):
+            if(item == load_data[str(idx)]["select_func"]):
+                select_func = idx_sel
+        
+        #set mouse_func
+        for idx_sel, item in enumerate(mouse_func_list):
+            if(item == load_data[str(idx)]["mouse_func"]):
+                mouse_func = idx_sel
+        
+        #set key_func
+        for idx_sel, item in enumerate(key_func_list):
+            if(item == load_data[str(idx)]["key_func"]):
+                key_func = idx_sel
 
+        #set key_combo
+        for idx_sel, item in enumerate(key_list):
+            if(item == load_data[str(idx)]["key_combo"]):
+                key_combo = idx_sel
 
+        #set hotkey
+        for idx_sel, item in enumerate(hotkey_list):
+            if(item == load_data[str(idx)]["hotkey"]):
+                hotkey = idx_sel
+
+        text_ent = load_data[str(idx)]["text_ent"]
+        delay_ent = load_data[str(idx)]["delay_ent"]
+        target_win_posX = load_data[str(idx)]["target_win_posX"]
+        target_win_posY = load_data[str(idx)]["target_win_posY"]
+
+        makeTarget(act_deact, select_func, mouse_func, key_func, key_combo, hotkey, text_ent, delay_ent, target_win_posX, target_win_posY)
+
+  
 
 
 
@@ -471,29 +552,29 @@ load_btn            .grid(row=0, column=1, sticky='news', padx=(5,0), pady=(5,0)
 
 
 ####set_target_lbframe
-set_target_lbframe = tk.LabelFrame(window, text='Set Targets')
+set_target_lbframe  = tk.LabelFrame(window, text='Set Targets')
 #Act(chk_btn), No. , Select Func.(Mouse, Keyboard, Hotkey, Write Text), Mouse Func.(L-click, L-Down, L-Up, R-click, R-Down, R-Up, Double, Move, Drag), key Func.(Press, KeyDown, KeyUp), Key('a', 'b',...), Hotkey(Ctrl+A, Ctrl+C, Ctrl+V), Text, Delay
 #it will execute just what you Act checked
 #when you select Mouse, then M-Function menu will be activated
-no_lb           = tk.Label(set_target_lbframe, anchor='center', text='No.')
-act_lb          = tk.Label(set_target_lbframe, anchor='center', text='Act')
-select_func_lb  = tk.Label(set_target_lbframe, anchor='center', width=12, text='Select Func.')
-mouse_func_lb   = tk.Label(set_target_lbframe, anchor='center', width=12, text='Mouse Func.')
-key_func_lb     = tk.Label(set_target_lbframe, anchor='center', width=12, text='Key Func')
-key_lb          = tk.Label(set_target_lbframe, anchor='center', width=12, text='Key')
-hotkey_lb       = tk.Label(set_target_lbframe, anchor='center', width=12, text='Hotkey')
-text_lb         = tk.Label(set_target_lbframe, anchor='center', width=20, text='Text')
-delay_lb        = tk.Label(set_target_lbframe, anchor='center', width=8, text='Delay(ms)')
+no_lb               = tk.Label(set_target_lbframe, anchor='center', text='No.')
+act_lb              = tk.Label(set_target_lbframe, anchor='center', text='Act')
+select_func_lb      = tk.Label(set_target_lbframe, anchor='center', width=12, text='Select Func.')
+mouse_func_lb       = tk.Label(set_target_lbframe, anchor='center', width=12, text='Mouse Func.')
+key_func_lb         = tk.Label(set_target_lbframe, anchor='center', width=12, text='Key Func')
+key_lb              = tk.Label(set_target_lbframe, anchor='center', width=12, text='Key')
+hotkey_lb           = tk.Label(set_target_lbframe, anchor='center', width=12, text='Hotkey')
+text_lb             = tk.Label(set_target_lbframe, anchor='center', width=20, text='Text')
+delay_lb            = tk.Label(set_target_lbframe, anchor='center', width=8, text='Delay(ms)')
 #seperators
-sep_v1          = ttk.Separator(set_target_lbframe, orient="vertical")
-sep_v2          = ttk.Separator(set_target_lbframe, orient="vertical")
-sep_v3          = ttk.Separator(set_target_lbframe, orient="vertical")
-sep_v4          = ttk.Separator(set_target_lbframe, orient="vertical")
-sep_v5          = ttk.Separator(set_target_lbframe, orient="vertical")
-sep_v6          = ttk.Separator(set_target_lbframe, orient="vertical")
-sep_v7          = ttk.Separator(set_target_lbframe, orient="vertical")
-sep_v8          = ttk.Separator(set_target_lbframe, orient="vertical")
-sep_h1          = ttk.Separator(set_target_lbframe, orient="horizontal")
+sep_v1              = ttk.Separator(set_target_lbframe, orient="vertical")
+sep_v2              = ttk.Separator(set_target_lbframe, orient="vertical")
+sep_v3              = ttk.Separator(set_target_lbframe, orient="vertical")
+sep_v4              = ttk.Separator(set_target_lbframe, orient="vertical")
+sep_v5              = ttk.Separator(set_target_lbframe, orient="vertical")
+sep_v6              = ttk.Separator(set_target_lbframe, orient="vertical")
+sep_v7              = ttk.Separator(set_target_lbframe, orient="vertical")
+sep_v8              = ttk.Separator(set_target_lbframe, orient="vertical")
+sep_h1              = ttk.Separator(set_target_lbframe, orient="horizontal")
 ####set_target_lbframe GRID
 set_target_lbframe  .grid(row=1, column=0, padx=(5,0), pady=(5,0), sticky='news', rowspan=999, columnspan=20)
 no_lb               .grid(row=0, column=0, padx=(5,5), pady=(5,0))
@@ -544,8 +625,11 @@ keyboard.add_hotkey('ctrl+shift+space', threadStop)
 
 
 
+
+
 # 종료시 호출
 def on_closing():
+    global thd1_bool
     if messagebox.askokcancel("Quit", "Do you want to quit?"):
         thd1_bool = False
         window.destroy()
