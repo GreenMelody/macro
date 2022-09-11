@@ -73,11 +73,11 @@ def makeTarget(act_deact = 1, select_func=0, mouse_func=0, key_func=0, key_combo
     chk_var.append(tk.IntVar())
     no_lb_arr               .append(tk.Label(set_target_lbframe, text=str(t_cnt+1)))
     act_chk_btn_arr         .append(ttk.Checkbutton(set_target_lbframe, variable=chk_var[t_cnt]))
-    select_func_combo_arr .append(ttk.Combobox(set_target_lbframe, state='readonly', width=8, values=select_func_list))
-    mouse_func_combo_arr  .append(ttk.Combobox(set_target_lbframe, state='readonly', width=8, values=mouse_func_list))
-    key_func_combo_arr    .append(ttk.Combobox(set_target_lbframe, state='readonly', width=8, values=key_func_list))
-    key_combo_arr         .append(ttk.Combobox(set_target_lbframe, state='readonly', width=8, values=key_list))
-    hotkey_combo_arr      .append(ttk.Combobox(set_target_lbframe, state='readonly', width=8, values=hotkey_list))
+    select_func_combo_arr   .append(ttk.Combobox(set_target_lbframe, state='readonly', width=8, values=select_func_list))
+    mouse_func_combo_arr    .append(ttk.Combobox(set_target_lbframe, state='readonly', width=8, values=mouse_func_list))
+    key_func_combo_arr      .append(ttk.Combobox(set_target_lbframe, state='readonly', width=8, values=key_func_list))
+    key_combo_arr           .append(ttk.Combobox(set_target_lbframe, state='readonly', width=8, values=key_list))
+    hotkey_combo_arr        .append(ttk.Combobox(set_target_lbframe, state='readonly', width=8, values=hotkey_list))
     text_entry_arr          .append(tk.Entry(set_target_lbframe))
     delay_entry_arr         .append(tk.Entry(set_target_lbframe, justify='right', width=8))
 
@@ -165,12 +165,13 @@ def threadStart():
         thd1_bool = False
     else:
         if(len(target_win_arr) < 1):
-            messagebox.showwarning(title='No Targets', message='Please add targets push the + button')
+            messagebox.showwarning(title='Warning', message='Please add targets push the + button')
         else:
             print('thread start!')
             thd1_bool = True
             start_btn.config(bg='red')
             thd1.start()
+            
 
 #thread stop
 def threadStop():
@@ -201,35 +202,40 @@ def checkValues():
 
 #when you push the start button, it will save target points and ect. only act checked
 def saveCondition():
-    checkValues()
-    allWidgetsActDeact()
-
-    save_condition_arr.clear()
-    t_cnt = len(target_win_arr)
-    for idx in range(0, t_cnt):
-        num             = no_lb_arr[idx].cget('text')
-        act_deact       = chk_var[idx].get()
-        select_func     = select_func_combo_arr[idx].get()
-        mouse_func      = mouse_func_combo_arr[idx].get()
-        #mouse target point X,Y
-        mouseX          = target_lb2_arr[idx].winfo_rootx() + (target_lb2_arr[idx].winfo_width())/2
-        mouseY          = target_lb2_arr[idx].winfo_rooty() + (target_lb2_arr[idx].winfo_height())/2
-        key_func        = key_func_combo_arr[idx].get()
-        key_combo       = key_combo_arr[idx].get()
-        hotkey          = hotkey_combo_arr[idx].get()
-        text_ent        = text_entry_arr[idx].get()
-        delay_ent       = delay_entry_arr[idx].get()
-        delay_ent       = int(delay_ent) / 1000
-        target_win_posX = str(target_win_arr[idx].winfo_rootx())
-        target_win_posY = str(target_win_arr[idx].winfo_rooty())
-
-        save_condition_arr.append([num, act_deact, select_func, mouse_func, mouseX, mouseY, key_func, key_combo, hotkey, text_ent, delay_ent, target_win_posX, target_win_posY])
+    try:
+        checkValues()
+        allWidgetsActDeact()
         
-    for item in save_condition_arr:
-        print(item)
+        save_condition_arr.clear()
+        t_cnt = len(target_win_arr)
+        for idx in range(0, t_cnt):
+            num             = no_lb_arr[idx].cget('text')
+            act_deact       = chk_var[idx].get()
+            select_func     = select_func_combo_arr[idx].get()
+            mouse_func      = mouse_func_combo_arr[idx].get()
+            #mouse target point X,Y
+            mouseX          = target_lb2_arr[idx].winfo_rootx() + (target_lb2_arr[idx].winfo_width())/2
+            mouseY          = target_lb2_arr[idx].winfo_rooty() + (target_lb2_arr[idx].winfo_height())/2
+            key_func        = key_func_combo_arr[idx].get()
+            key_combo       = key_combo_arr[idx].get()
+            hotkey          = hotkey_combo_arr[idx].get()
+            text_ent        = text_entry_arr[idx].get()
+            delay_ent       = delay_entry_arr[idx].get()
+            delay_ent       = int(delay_ent) / 1000
+            target_win_posX = str(target_win_arr[idx].winfo_rootx())
+            target_win_posY = str(target_win_arr[idx].winfo_rooty())
 
-    if(thd1_bool):
-        play()
+            save_condition_arr.append([num, act_deact, select_func, mouse_func, mouseX, mouseY, key_func, key_combo, hotkey, text_ent, delay_ent, target_win_posX, target_win_posY])
+            
+        for item in save_condition_arr:
+            print(item)
+
+        if(thd1_bool):
+            play()
+
+    except Exception as e:
+        print('play error : ',e)
+
 
 def targetCrossActDeact(show):
     if(show):
@@ -240,6 +246,7 @@ def targetCrossActDeact(show):
         cnt = len(target_lb2_arr)
         for idx_lb in range(0, cnt):
             target_lb2_arr[idx_lb]['text']=''
+
 
 def play():
     global thd1_bool
@@ -334,11 +341,9 @@ def targetShowHide():
         if(show_hide_chk_var.get()):
             for item in target_win_arr:
                 item.deiconify()     #show target window
-            print('checked')
         else:
             for item in target_win_arr:
                 item.withdraw()
-            print('not checked')
     
 
 #disable comboboxes not necessary 
@@ -346,6 +351,7 @@ def actDeactWidgets(event):
     t_cnt = len(target_win_arr)
     for idx in range(0, t_cnt):
         if(select_func_combo_arr[idx].get() == 'Mouse'):
+            act_chk_btn_arr         [idx].config(state='normal')
             select_func_combo_arr   [idx].config(state='readonly')
             mouse_func_combo_arr    [idx].config(state='readonly')
             key_func_combo_arr      [idx].config(state='disabled')
@@ -355,6 +361,7 @@ def actDeactWidgets(event):
             delay_entry_arr         [idx].config(stat='normal')
             target_win_arr          [idx].deiconify()     #show target window
         elif(select_func_combo_arr[idx].get() == 'Keyboard'):
+            act_chk_btn_arr         [idx].config(state='normal')
             select_func_combo_arr   [idx].config(state='readonly')
             mouse_func_combo_arr    [idx].config(state='disabled')
             key_func_combo_arr      [idx].config(state='readonly')
@@ -364,6 +371,7 @@ def actDeactWidgets(event):
             delay_entry_arr         [idx].config(stat='normal')
             target_win_arr          [idx].withdraw()     #hide target window
         elif(select_func_combo_arr[idx].get() == 'Hotkey'):
+            act_chk_btn_arr         [idx].config(state='normal')
             select_func_combo_arr   [idx].config(state='readonly')
             mouse_func_combo_arr    [idx].config(state='disabled')
             key_func_combo_arr      [idx].config(state='disabled')
@@ -373,6 +381,7 @@ def actDeactWidgets(event):
             delay_entry_arr         [idx].config(stat='normal')
             target_win_arr          [idx].withdraw()     #hide target window
         elif(select_func_combo_arr[idx].get() == 'WriteText'):
+            act_chk_btn_arr         [idx].config(state='normal')
             select_func_combo_arr   [idx].config(state='readonly')
             mouse_func_combo_arr    [idx].config(state='disabled')
             key_func_combo_arr      [idx].config(state='disabled')
@@ -390,6 +399,7 @@ def allWidgetsActDeact():
         loop_entry                  .config(state='readonly')
         t_cnt = len(target_win_arr)
         for idx in range(0, t_cnt):
+            act_chk_btn_arr         [idx].config(state='disabled')
             select_func_combo_arr   [idx].config(state='disabled')
             mouse_func_combo_arr    [idx].config(state='disabled')
             key_func_combo_arr      [idx].config(state='disabled')
@@ -410,7 +420,7 @@ def saveFile():
                                                 ("all files", "*.*")))
         saveCondition()
         if(len(save_condition_arr) == 0):
-            messagebox.showwarning(title='No Targets', message='Please add targets push the + button')
+            messagebox.showwarning(title='Warning', message='Please add targets push the + button')
         else:
             file_data = OrderedDict()
             file_data['total_count']    = len(save_condition_arr)
@@ -500,6 +510,7 @@ def loadFile():
 
             makeTarget(act_deact, select_func, mouse_func, key_func, key_combo, hotkey, text_ent, delay_ent, target_win_posX, target_win_posY)
         messagebox.showinfo(title='Success', message='File load successfully')
+
     except Exception as e:
         messagebox.showwarning(title='Warning', message=e)
         print('file save error :', e)
