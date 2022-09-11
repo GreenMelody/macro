@@ -154,12 +154,38 @@ def threadStart():
     if(thd1_bool):
         print('already thread started')
     else:
-        print('thread start!')
-        thd1_bool = True
-        thd1.start()
+        if(len(target_win_arr) < 1):
+            messagebox.showwarning(title='Not enough targets', message='Please add targets push the + button')
+        else:
+            print('thread start!')
+            thd1_bool = True
+            thd1.start()
+
+#check incorrect values
+def checkValues():
+    loop = loop_entry.get()
+    init_delay = init_delay_entry.get()
+
+    #init delay empty check
+    if(init_delay == ''):
+        init_delay_entry.insert(0,'1000')
+
+    #Loop empty check
+    if(loop == ''):
+        loop_entry.insert(0,'1')
+
+    #delay empty check
+    t_cnt = len(target_win_arr)
+    for idx in range(0, t_cnt):
+        delay_ent   = delay_entry_arr[idx].get()
+        if(delay_ent == ''):
+            delay_entry_arr[idx].insert(0,'10')
+     
+
 
 #when you push the start button, it will save target points and ect. only act checked
 def saveCondition():
+    checkValues()
     allWidgetsActDeact()
 
     save_condition_arr.clear()
@@ -177,10 +203,7 @@ def saveCondition():
         hotkey      = hotkey_combo_arr[idx].get()
         text_ent    = text_entry_arr[idx].get()
         delay_ent   = delay_entry_arr[idx].get()
-        if(delay_ent == ''):
-            delay_ent = int(10)
-        else:
-            delay_ent   = int(delay_ent) / 1000
+        delay_ent   = int(delay_ent) / 1000
         target_win_posX = target_win_arr[idx].winfo_rootx()
         target_win_posY = target_win_arr[idx].winfo_rooty()
 
@@ -188,7 +211,7 @@ def saveCondition():
         
     for item in save_condition_arr:
         print(item)
-    
+
     play()
 
 
@@ -198,11 +221,7 @@ def play():
     loop = loop_entry.get()
     init_delay = init_delay_entry.get()
 
-    #empty check
-    if((loop == '') or (init_delay == '')):
-        messagebox.showwarning(title='Empty value', message='Please insert values')
-        print('abnormal termination')
-        return 0
+    
 
     loop = int(loop)
     #init delay
@@ -210,7 +229,12 @@ def play():
     time.sleep(init_delay)
 
     for idx_lp in range(1, loop+1):
+        #show loop progress
+        prog_loop_lb2.config(text=str(idx_lp).zfill(3) + '/' + str(loop).zfill(3))
         for idx, item in enumerate(save_condition_arr):
+            #show loop progress
+            prog_element_lb2.config(text=str(idx+1).zfill(3) + '/' + str(len(save_condition_arr)).zfill(3))
+
             target_lb2_arr[idx]['text']=''
             if(item[0] == 1):   #act_chkbtn is checked
                 if(item[2] == 'Mouse'):
@@ -278,6 +302,7 @@ def play():
     allWidgetsActDeact()
     print('thread done!')
   
+
 #disable comboboxes not necessary 
 def actDeactWidgets(event):
     t_cnt = len(target_win_arr)
@@ -320,9 +345,8 @@ def actDeactWidgets(event):
             target_win_arr[idx].withdraw()     #hide target window
         
        
-
+#when thread is running, all of widgets are Deactivated
 def allWidgetsActDeact():
-    
     if(thd1_bool):
         init_delay_entry.config(state='readonly')
         loop_entry.config(state='readonly')
@@ -338,7 +362,6 @@ def allWidgetsActDeact():
     else:
         init_delay_entry.config(state='normal')
         loop_entry.config(state='normal')
-        
         actDeactWidgets('')
     
 
@@ -358,11 +381,11 @@ def allWidgetsActDeact():
 set_init_lbframe    = tk.LabelFrame(window, text='Set Initial values')
 init_delay_lb       = tk.Label(set_init_lbframe, justify='right', text='Init delay(ms) : ')
 init_delay_entry    = tk.Entry(set_init_lbframe, justify='right', width=8)
-loop_lb             = tk.Label(set_init_lbframe, justify='right', text='Loop : ')
+loop_lb             = tk.Label(set_init_lbframe, justify='right', text='Loop : ', anchor='e')
 loop_entry          = tk.Entry(set_init_lbframe, justify='right', width=8)
 ####set_init GRID
 set_init_lbframe    .grid(row=0, column=0, padx=(5,0), pady=(5,0), sticky='nws')
-init_delay_lb       .grid(row=0, column=0, padx=(5,5), pady=(5,5))
+init_delay_lb       .grid(row=0, column=0, padx=(5,5), pady=(5,0))
 init_delay_entry    .grid(row=0, column=1, padx=(5,5), pady=(5,0))
 init_delay_entry    .insert(0,'1000')
 loop_lb             .grid(row=1, column=0, padx=(5,5), pady=(5,5), sticky='ew')
@@ -372,22 +395,35 @@ loop_entry          .insert(0,'1')
 
 ####add_target_lbframe
 add_target_lbframe = tk.LabelFrame(window, text='Add/Del Targets')
-add_target_btn = tk.Button(add_target_lbframe, text='+', width=2, height=1, font=font_15_bold, command=makeTarget) #command=lambda: command_args(arg1, arg2, arg3)
-del_target_btn = tk.Button(add_target_lbframe, text='-', width=2, height=1, font=font_15_bold, command=delTarget) #command=lambda: command_args(arg1, arg2, arg3)
+add_target_btn = tk.Button(add_target_lbframe, text='+', width=3, height=1, font=font_15_bold, command=makeTarget) #command=lambda: command_args(arg1, arg2, arg3)
+del_target_btn = tk.Button(add_target_lbframe, text='-', width=3, height=1, font=font_15_bold, command=delTarget) #command=lambda: command_args(arg1, arg2, arg3)
 ####add_target_lbframe GRID
 add_target_lbframe  .grid(row=0, column=1, sticky='news', padx=(5,0), pady=(5,0))
 add_target_btn      .grid(row=0, column=0, sticky='news', padx=(5,0), pady=(5,0))
-del_target_btn      .grid(row=0, column=1, sticky='news', padx=(5,0), pady=(5,0))
+del_target_btn      .grid(row=0, column=1, sticky='news', padx=(5,5), pady=(5,0))
 
 
 ####Start_lbframe
 start_lbframe       = tk.LabelFrame(window, text='Start/Stop')
-test2_btn = tk.Button(start_lbframe, text='get target point', command=saveCondition)
-start_btn = tk.Button(start_lbframe, text='Start', command=threadStart)
+start_btn = tk.Button(start_lbframe, text='Start', width=7, height=2, command=threadStart)
 ####Start_lbframe GRID
 start_lbframe       .grid(row=0, column=2, sticky='news', padx=(5,0), pady=(5,0))
-test2_btn           .grid(row=0, column=0, sticky='news', padx=(5,0), pady=(5,0))
 start_btn           .grid(row=0, column=1, sticky='news', padx=(5,5), pady=(5,0))
+
+####progress_lbframe
+progress_lbframe    =tk.LabelFrame(window, text='Progress')
+prog_loop_lb1       =tk.Label(progress_lbframe, text='Loop : ', anchor='e')
+prog_loop_lb2       =tk.Label(progress_lbframe, text='000/000')
+prog_element_lb1    =tk.Label(progress_lbframe, text='Element : ', anchor='e')
+prog_element_lb2    =tk.Label(progress_lbframe, text='000/000')
+
+
+####progress_lbframe GRID
+progress_lbframe    .grid(row=0, column=3, sticky='news', padx=(5,0), pady=(5,0))
+prog_loop_lb1       .grid(row=0, column=0, sticky='news', padx=(5,0), pady=(5,0))
+prog_loop_lb2       .grid(row=0, column=1, sticky='news', padx=(5,5), pady=(5,0))
+prog_element_lb1    .grid(row=1, column=0, sticky='news', padx=(5,0), pady=(5,0))
+prog_element_lb2    .grid(row=1, column=1, sticky='news', padx=(5,5), pady=(5,0))
 
 
 ####set_target_lbframe
