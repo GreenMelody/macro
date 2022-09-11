@@ -22,12 +22,14 @@ font_15_bold = font.Font(size=15, weight='bold')
 select_func_list = ['Mouse', 'Keyboard', 'Hotkey', 'Write' 'Text']
 mouse_func_list = ['L-Click', 'L-Down', 'L-Up', 'R-Click', 'R-Down', 'R-Up', 'L-Double','L-Triple', 'Move', 'Drag']
 key_func_list = ['Press', 'KeyDown', 'KeyUp']
-key_list = ['a', 'b', 'c', 'd', 'e','f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o','p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
-            '0', '1', '2', '3', '4', '5', '6', '7','8', '9',
+key_list = ['left', 'right', 'up', 'down','enter', 'esc', 'escape', 'space', 'backspace', 'tab', 'alt', 'altleft', 'altright', 'ctrl', 'ctrlleft', 'ctrlright', 'shift', 'shiftleft', 'shiftright', 'del', 'delete', 'end', 'hanguel', 'hangul', 'home', 'insert',
             'f1', 'f2', 'f3', 'f4', 'f5', 'f6', 'f7', 'f8', 'f9', 'f10', 'f11', 'f12',
-            'space', 'backspace', 'tab', 'alt', 'altleft', 'altright', 'ctrl', 'ctrlleft', 'ctrlright', 'shift', 'shiftleft', 'shiftright', 'del', 'delete', 'left', 'right', 'up', 'down', 'end', 'enter', 'esc', 'escape', 'hanguel', 'hangul', 'home', 'insert',
-            'num0', 'num1', 'num2', 'num3', 'num4', 'num5', 'num6', 'num7', 'num8', 'num9', 'numlock', 'pagedown', 'pageup', 'pause', 'pgdn', 'pgup', 'printscreen', 'prntscrn', 'scrolllock',
-            '!', '"', '#', '$', '%', '&', "'", '(', ')', '*', '+', ',', '-', '.', '/',  ':', ';', '<', '=', '>', '?', '@', '[', '\\', ']', '^', '_', '`', '{', '|', '}', '~']
+            'pagedown', 'pageup', 'pause', 'pgdn', 'pgup', 'printscreen', 'prntscrn', 'scrolllock',
+            '!', '"', '#', '$', '%', '&', "'", '(', ')', '*', '+', ',', '-', '.', '/',  ':', ';', '<', '=', '>', '?', '@', '[', '\\', ']', '^', '_', '`', '{', '|', '}', '~'
+            'a', 'b', 'c', 'd', 'e','f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o','p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+            '0', '1', '2', '3', '4', '5', '6', '7','8', '9',
+            'num0', 'num1', 'num2', 'num3', 'num4', 'num5', 'num6', 'num7', 'num8', 'num9', 'numlock'
+            ]
 hotkey_list = ['Ctrl+a', 'Ctrl+c', 'Ctrl+v']
 
 save_condition_arr=[]       #save all things, [num, act_deact, select_func, mouse_func, mouseX, mouseY, key_func, key_combo, hotkey, text_ent, delay_ent, target_win_posX, target_win_posY]
@@ -235,7 +237,7 @@ def targetCrossActDeact(show):
     else:
         cnt = len(target_lb2_arr)
         for idx_lb in range(0, cnt):
-            target_lb2_arr[idx_lb]['text']='+'
+            target_lb2_arr[idx_lb]['text']=''
 
 def play():
     global thd1_bool
@@ -538,7 +540,7 @@ stop_lbframe        = tk.LabelFrame(window, text='Stop')
 stop_lb1            = tk.Label(stop_lbframe, text='Push ''▶'' button OR', anchor='w')
 stop_lb2            = tk.Label(stop_lbframe, text='Ctrl+Shift+Space', anchor='w')
 ####Stop_lbframe GRID
-stop_lbframe       .grid(row=0, column=3, sticky='news', padx=(5,0), pady=(5,0))
+stop_lbframe        .grid(row=0, column=3, sticky='news', padx=(5,0), pady=(5,0))
 stop_lb1            .grid(row=0, column=0, sticky='news', padx=(5,0), pady=(5,0))
 stop_lb2            .grid(row=1, column=0, sticky='news', padx=(5,0), pady=(0,0))
 
@@ -619,7 +621,7 @@ hotkey_lb           .grid(row=0, column=12, padx=(5,5), pady=(5,0))
 sep_v7              .grid(row=0, column=13, sticky='ns', rowspan=999)
 text_lb             .grid(row=0, column=14, padx=(5,5), pady=(5,0))
 sep_v8              .grid(row=0, column=15, sticky='ns', rowspan=999)
-delay_lb             .grid(row=0, column=16, padx=(5,5), pady=(5,0))
+delay_lb            .grid(row=0, column=16, padx=(5,5), pady=(5,0))
 sep_h1              .grid(row=1, column=0, sticky='ew', columnspan=17) 
 
 
