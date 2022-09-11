@@ -1,3 +1,4 @@
+from os import stat
 from queue import Empty
 import threading
 import time
@@ -146,8 +147,21 @@ def delTarget():
     else:
         print('no widget to delete')
 
+
+def threadStart():
+    global thd1_bool
+    thd1 = threading.Thread(target=saveCondition)
+    if(thd1_bool):
+        print('already thread started')
+    else:
+        print('thread start!')
+        thd1_bool = True
+        thd1.start()
+
 #when you push the start button, it will save target points and ect. only act checked
 def saveCondition():
+    allWidgetsActDeact()
+
     save_condition_arr.clear()
     t_cnt = len(target_win_arr)
     for idx in range(0, t_cnt):
@@ -176,17 +190,6 @@ def saveCondition():
         print(item)
     
     play()
-
-
-def threadStart():
-    global thd1_bool
-    thd1 = threading.Thread(target=saveCondition)
-    if(thd1_bool):
-        print('already thread started')
-    else:
-        print('thread start!')
-        thd1_bool = True
-        thd1.start()
 
 
 def play():
@@ -272,6 +275,7 @@ def play():
         if(thd1_bool == False): break
 
     thd1_bool = False
+    allWidgetsActDeact()
     print('thread done!')
   
 #disable comboboxes not necessary 
@@ -279,39 +283,64 @@ def actDeactWidgets(event):
     t_cnt = len(target_win_arr)
     for idx in range(0, t_cnt):
         if(select_func_combo_arr[idx].get() == 'Mouse'):
+            select_func_combo_arr[idx].config(state='readonly')
             mouse_func_combo_arr[idx].config(state='readonly')
             key_func_combo_arr[idx].config(state='disabled')
             key_combo_arr[idx].config(state='disabled')
             hotkey_combo_arr[idx].config(state='disabled')
             text_entry_arr[idx].config(state='readonly')
+            delay_entry_arr[idx].config(stat='normal')
             target_win_arr[idx].deiconify()     #show target window
         elif(select_func_combo_arr[idx].get() == 'Keyboard'):
+            select_func_combo_arr[idx].config(state='readonly')
             mouse_func_combo_arr[idx].config(state='disabled')
             key_func_combo_arr[idx].config(state='readonly')
             key_combo_arr[idx].config(state='readonly')
             hotkey_combo_arr[idx].config(state='disabled')
             text_entry_arr[idx].config(state='readonly')
+            delay_entry_arr[idx].config(stat='normal')
             target_win_arr[idx].withdraw()     #hide target window
         elif(select_func_combo_arr[idx].get() == 'Hotkey'):
+            select_func_combo_arr[idx].config(state='readonly')
             mouse_func_combo_arr[idx].config(state='disabled')
             key_func_combo_arr[idx].config(state='disabled')
             key_combo_arr[idx].config(state='disabled')
             hotkey_combo_arr[idx].config(state='readonly')
             text_entry_arr[idx].config(state='readonly')
+            delay_entry_arr[idx].config(stat='normal')
             target_win_arr[idx].withdraw()     #hide target window
         elif(select_func_combo_arr[idx].get() == 'WriteText'):
+            select_func_combo_arr[idx].config(state='readonly')
             mouse_func_combo_arr[idx].config(state='disabled')
             key_func_combo_arr[idx].config(state='disabled')
             key_combo_arr[idx].config(state='disabled')
             hotkey_combo_arr[idx].config(state='disabled')
             text_entry_arr[idx].config(state='normal')
+            delay_entry_arr[idx].config(stat='normal')
             target_win_arr[idx].withdraw()     #hide target window
         
        
 
 def allWidgetsActDeact():
-
-    pass
+    
+    if(thd1_bool):
+        init_delay_entry.config(state='readonly')
+        loop_entry.config(state='readonly')
+        t_cnt = len(target_win_arr)
+        for idx in range(0, t_cnt):
+            select_func_combo_arr[idx].config(state='disabled')
+            mouse_func_combo_arr[idx].config(state='disabled')
+            key_func_combo_arr[idx].config(state='disabled')
+            key_combo_arr[idx].config(state='disabled')
+            hotkey_combo_arr[idx].config(state='disabled')
+            text_entry_arr[idx].config(state='readonly')
+            delay_entry_arr[idx].config(stat='readonly')
+    else:
+        init_delay_entry.config(state='normal')
+        loop_entry.config(state='normal')
+        
+        actDeactWidgets('')
+    
 
 
 
@@ -329,14 +358,14 @@ def allWidgetsActDeact():
 set_init_lbframe    = tk.LabelFrame(window, text='Set Initial values')
 init_delay_lb       = tk.Label(set_init_lbframe, justify='right', text='Init delay(ms) : ')
 init_delay_entry    = tk.Entry(set_init_lbframe, justify='right', width=8)
-loop_lb             = tk.Label(set_init_lbframe, justify='right', text='Loop : ', bg='red')
+loop_lb             = tk.Label(set_init_lbframe, justify='right', text='Loop : ')
 loop_entry          = tk.Entry(set_init_lbframe, justify='right', width=8)
 ####set_init GRID
 set_init_lbframe    .grid(row=0, column=0, padx=(5,0), pady=(5,0), sticky='nws')
 init_delay_lb       .grid(row=0, column=0, padx=(5,5), pady=(5,5))
 init_delay_entry    .grid(row=0, column=1, padx=(5,5), pady=(5,0))
 init_delay_entry    .insert(0,'1000')
-loop_lb             .grid(row=1, column=0, padx=(5,5), pady=(5,0), sticky='ew')
+loop_lb             .grid(row=1, column=0, padx=(5,5), pady=(5,5), sticky='ew')
 loop_entry          .grid(row=1, column=1, padx=(5,5), pady=(5,5))
 loop_entry          .insert(0,'1')
 
@@ -347,8 +376,8 @@ add_target_btn = tk.Button(add_target_lbframe, text='+', width=2, height=1, font
 del_target_btn = tk.Button(add_target_lbframe, text='-', width=2, height=1, font=font_15_bold, command=delTarget) #command=lambda: command_args(arg1, arg2, arg3)
 ####add_target_lbframe GRID
 add_target_lbframe  .grid(row=0, column=1, sticky='news', padx=(5,0), pady=(5,0))
-add_target_btn      .grid(row=0, column=2)
-del_target_btn      .grid(row=0, column=9)
+add_target_btn      .grid(row=0, column=0, sticky='news', padx=(5,0), pady=(5,0))
+del_target_btn      .grid(row=0, column=1, sticky='news', padx=(5,0), pady=(5,0))
 
 
 ####Start_lbframe
@@ -357,8 +386,9 @@ test2_btn = tk.Button(start_lbframe, text='get target point', command=saveCondit
 start_btn = tk.Button(start_lbframe, text='Start', command=threadStart)
 ####Start_lbframe GRID
 start_lbframe       .grid(row=0, column=2, sticky='news', padx=(5,0), pady=(5,0))
-test2_btn           .grid(row=0, column=2)
-start_btn           .grid(row=0, column=9)
+test2_btn           .grid(row=0, column=0, sticky='news', padx=(5,0), pady=(5,0))
+start_btn           .grid(row=0, column=1, sticky='news', padx=(5,5), pady=(5,0))
+
 
 ####set_target_lbframe
 set_target_lbframe = tk.LabelFrame(window, text='Set Targets')
@@ -384,7 +414,6 @@ sep_v6          = ttk.Separator(set_target_lbframe, orient="vertical")
 sep_v7          = ttk.Separator(set_target_lbframe, orient="vertical")
 sep_v8          = ttk.Separator(set_target_lbframe, orient="vertical")
 sep_h1          = ttk.Separator(set_target_lbframe, orient="horizontal")
-
 ####set_target_lbframe GRID
 set_target_lbframe  .grid(row=1, column=0, padx=(5,0), pady=(5,0), sticky='news', rowspan=999, columnspan=999)
 act_lb              .grid(row=0, column=0, padx=(5,5), pady=(5,0))
@@ -412,20 +441,11 @@ sep_h1              .grid(row=1, column=0, sticky='ew', columnspan=17)
 
 
 
-
-        
-
-
-
-
-
-
-
-
-
 #only digit input
 def onlyNumbers(event):
-    except_keys=['0','1','2','3','4','5','6','7','8','9', 'BackSpace', 'Escape','Caps_Lock','Shift_L','Control_L','Alt_L','Alt_L','Win_L','Win_R','App','Shift_L','Return',
+    except_keys=['0','1','2','3','4','5','6','7','8','9', 
+                    'BackSpace', 'Escape','Caps_Lock','Shift_L','Control_L',
+                    'Alt_L','Alt_L','Win_L','Win_R','App','Shift_L','Return',
                     'F1','F2','F3','F4','F5','F6','F7','F8','F9','F10','F11','F12','Scroll_Lock','Pause','Insert',
                     'Home','Prior','Delete','End','Next','Num_Lock','Left','Down','Right','Up', '??']
     if(event.keysym in except_keys):
