@@ -100,11 +100,12 @@ def makeTarget():
 
     #to move target point using mouse drag
     def drag(event):
-        width = str(target_win_arr[t_cnt].winfo_width())
-        height = str(target_win_arr[t_cnt].winfo_height())
-        pos_x = str(pyautogui.position().x)
-        pos_y = str(pyautogui.position().y)
-        target_win_arr[t_cnt].geometry(width + 'x' + height + '+' + pos_x + '+' + pos_y)
+        if(not(thd1_bool)):
+            width = str(target_win_arr[t_cnt].winfo_width())
+            height = str(target_win_arr[t_cnt].winfo_height())
+            pos_x = str(pyautogui.position().x)
+            pos_y = str(pyautogui.position().y)
+            target_win_arr[t_cnt].geometry(width + 'x' + height + '+' + pos_x + '+' + pos_y)
 
     #mouse left drag event
     target_win_arr[t_cnt].bind("<B1-Motion>", drag)
