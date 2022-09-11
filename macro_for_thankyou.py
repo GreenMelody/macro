@@ -3,7 +3,7 @@ import pyautogui
 import tkinter as tk
 import tkinter.font as font
 import tkinter.ttk as ttk
-# pyautogui.moveTo(10,10, duration=2)
+import keyboard
 
 
 window = tk.Tk()
@@ -15,7 +15,7 @@ font_15 = font.Font(size=15)
 font_15_bold = font.Font(size=15, weight='bold')
 
 select_func_list = ['Mouse', 'Keyboard', 'Hotkey', 'Write' 'Text']
-mouse_func_list = ['L-Click', 'L-Down', 'L-Up', 'R-Click', 'R-Down', 'R-Up', 'Double', 'Move', 'Drag']
+mouse_func_list = ['L-Click', 'L-Down', 'L-Up', 'R-Click', 'R-Down', 'R-Up', 'L-Double','L-Triple', 'Move', 'Drag']
 key_func_list = ['Press', 'KeyDown', 'KeyUp']
 key_list = ['a', 'b', 'c', 'd', 'e','f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o','p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
             '0', '1', '2', '3', '4', '5', '6', '7','8', '9',
@@ -25,7 +25,7 @@ key_list = ['a', 'b', 'c', 'd', 'e','f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
             '!', '"', '#', '$', '%', '&', "'", '(', ')', '*', '+', ',', '-', '.', '/',  ':', ';', '<', '=', '>', '?', '@', '[', '\\', ']', '^', '_', '`', '{', '|', '}', '~']
             
 
-hotkey_list = ['Ctrl+A', 'Ctrl+C', 'Ctrl+V']
+hotkey_list = ['Ctrl+a', 'Ctrl+c', 'Ctrl+v']
 
 
 save_condition_arr=[]       #save all things, [act_deact, num, select_func, mouse_func, mouseX, mouseY, key_func, key_combo, hotkey, text_ent, delay_ent]
@@ -188,8 +188,10 @@ def play():
                     pyautogui.mouseDown(button='right', x=item[4], y=item[5])
                 elif(item[3] == 'R-Up'):
                     pyautogui.mouseUp(button='right', x=item[4], y=item[5])
-                elif(item[3] == 'Double'):
+                elif(item[3] == 'L-Double'):
                     pyautogui.click(clicks=2, button='left', x=item[4], y=item[5])
+                elif(item[3] == 'L-Triple'):
+                    pyautogui.click(clicks=3, button='left', x=item[4], y=item[5])
                 elif(item[3] == 'Move'):
                     pyautogui.moveTo(item[4], item[5])
                 elif(item[3] == 'Drag'):
@@ -210,6 +212,8 @@ def play():
             elif(item[2] == 'Hotkey'):
                 spl = item[8].split('+')
                 if(len(spl) == 2):
+                    print('hotkey2')
+                    print(spl[0],' , ', spl[1])
                     pyautogui.hotkey(spl[0], spl[1])
                 elif(len(spl) == 3):
                     pyautogui.hotkey(spl[0], spl[1], spl[2])
@@ -217,7 +221,8 @@ def play():
                     print('somethings wrong (hotkey)')
 
             elif(item[2] == 'WriteText'):
-                pyautogui.wirte(item[9])
+                # pyautogui.write(item[9])  #it doesn't work in 한글
+                keyboard.write(item[9])
             else:
                 print('somethings wrong 1')
 
