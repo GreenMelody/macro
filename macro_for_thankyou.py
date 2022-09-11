@@ -10,7 +10,6 @@ import keyboard
 from tkinter import END, messagebox
 from tkinter import filedialog
 
-
 window = tk.Tk()
 window.title('Tnank you for your help')
 window.geometry('1000x400+0+0')
@@ -205,19 +204,19 @@ def saveCondition():
     save_condition_arr.clear()
     t_cnt = len(target_win_arr)
     for idx in range(0, t_cnt):
-        num         = no_lb_arr[idx].cget('text')
-        act_deact   = chk_var[idx].get()
-        select_func = select_func_combo_arr[idx].get()
-        mouse_func  = mouse_func_combo_arr[idx].get()
+        num             = no_lb_arr[idx].cget('text')
+        act_deact       = chk_var[idx].get()
+        select_func     = select_func_combo_arr[idx].get()
+        mouse_func      = mouse_func_combo_arr[idx].get()
         #mouse target point X,Y
-        mouseX      = target_lb2_arr[idx].winfo_rootx() + (target_lb2_arr[idx].winfo_width())/2
-        mouseY      = target_lb2_arr[idx].winfo_rooty() + (target_lb2_arr[idx].winfo_height())/2
-        key_func    = key_func_combo_arr[idx].get()
-        key_combo   = key_combo_arr[idx].get()
-        hotkey      = hotkey_combo_arr[idx].get()
-        text_ent    = text_entry_arr[idx].get()
-        delay_ent   = delay_entry_arr[idx].get()
-        delay_ent   = int(delay_ent) / 1000
+        mouseX          = target_lb2_arr[idx].winfo_rootx() + (target_lb2_arr[idx].winfo_width())/2
+        mouseY          = target_lb2_arr[idx].winfo_rooty() + (target_lb2_arr[idx].winfo_height())/2
+        key_func        = key_func_combo_arr[idx].get()
+        key_combo       = key_combo_arr[idx].get()
+        hotkey          = hotkey_combo_arr[idx].get()
+        text_ent        = text_entry_arr[idx].get()
+        delay_ent       = delay_entry_arr[idx].get()
+        delay_ent       = int(delay_ent) / 1000
         target_win_posX = str(target_win_arr[idx].winfo_rootx())
         target_win_posY = str(target_win_arr[idx].winfo_rooty())
 
@@ -326,7 +325,7 @@ def play():
     start_btn.config(bg='#F0F0F0')
     print('thread done!')
   
-
+#targetpoint(+) show or hide
 def targetShowHide():
     if(len(target_win_arr) == 0):
         pass
@@ -340,7 +339,6 @@ def targetShowHide():
                 item.withdraw()
             print('not checked')
     
-
 
 #disable comboboxes not necessary 
 def actDeactWidgets(event):
@@ -387,27 +385,27 @@ def actDeactWidgets(event):
 #when thread is running, all of widgets are Deactivated
 def allWidgetsActDeact():
     if(thd1_bool):
-        init_delay_entry.config(state='readonly')
-        loop_entry.config(state='readonly')
+        init_delay_entry            .config(state='readonly')
+        loop_entry                  .config(state='readonly')
         t_cnt = len(target_win_arr)
         for idx in range(0, t_cnt):
-            select_func_combo_arr[idx].config(state='disabled')
-            mouse_func_combo_arr[idx].config(state='disabled')
-            key_func_combo_arr[idx].config(state='disabled')
-            key_combo_arr[idx].config(state='disabled')
-            hotkey_combo_arr[idx].config(state='disabled')
-            text_entry_arr[idx].config(state='readonly')
-            delay_entry_arr[idx].config(stat='readonly')
+            select_func_combo_arr   [idx].config(state='disabled')
+            mouse_func_combo_arr    [idx].config(state='disabled')
+            key_func_combo_arr      [idx].config(state='disabled')
+            key_combo_arr           [idx].config(state='disabled')
+            hotkey_combo_arr        [idx].config(state='disabled')
+            text_entry_arr          [idx].config(state='readonly')
+            delay_entry_arr         [idx].config(stat='readonly')
     else:
-        init_delay_entry.config(state='normal')
-        loop_entry.config(state='normal')
+        init_delay_entry            .config(state='normal')
+        loop_entry                  .config(state='normal')
         actDeactWidgets('')
     
 #save to json file
 def saveFile():
     filename = filedialog.asksaveasfilename(initialdir="/", title="Save File",
-                                          filetypes=(("Json", "*.json"),
-                                          ("all files", "*.*")))
+                                            filetypes=(("Json", "*.json"),
+                                            ("all files", "*.*")))
     saveCondition()
     if(len(save_condition_arr) == 0):
         messagebox.showwarning(title='No Targets', message='Please add targets push the + button')
@@ -439,18 +437,18 @@ def saveFile():
 #load json file 
 def loadFile():
     filename = filedialog.askopenfilename(initialdir="/", title="Select file",
-                                          filetypes=(("Json", "*.json"),
-                                          ("all files", "*.*")))
+                                            filetypes=(("Json", "*.json"),
+                                            ("all files", "*.*")))
     with open(filename, 'r', encoding='utf-8') as load_file:
         load_data = json.load(load_file)
     
     total_count = load_data["total_count"]
-    init_delay = load_data["init_delay"]
-    loop = load_data["loop"]
+    init_delay  = load_data["init_delay"]
+    loop        = load_data["loop"]
     init_delay_entry.delete(0, tk.END)
     init_delay_entry.insert(0, init_delay)
-    loop_entry.delete(0, tk.END)
-    loop_entry.insert(0, loop)
+    loop_entry      .delete(0, tk.END)
+    loop_entry      .insert(0, loop)
 
     t_cnt = len(target_win_arr)
     for idx in range(0, t_cnt):  delTarget()
@@ -488,14 +486,12 @@ def loadFile():
             if(item == load_data[str(idx)]["hotkey"]):
                 hotkey = idx_sel
 
-        text_ent = load_data[str(idx)]["text_ent"]
-        delay_ent = load_data[str(idx)]["delay_ent"]
+        text_ent    = load_data[str(idx)]["text_ent"]
+        delay_ent   = load_data[str(idx)]["delay_ent"]
         target_win_posX = load_data[str(idx)]["target_win_posX"]
         target_win_posY = load_data[str(idx)]["target_win_posY"]
 
         makeTarget(act_deact, select_func, mouse_func, key_func, key_combo, hotkey, text_ent, delay_ent, target_win_posX, target_win_posY)
-
-  
 
 
 
@@ -626,10 +622,6 @@ sep_h1              .grid(row=1, column=0, sticky='ew', columnspan=17)
 
 
 
-
-
-
-
 #only digit input
 def onlyNumbers(event):
     except_keys=['0','1','2','3','4','5','6','7','8','9', 
@@ -646,13 +638,10 @@ def onlyNumbers(event):
 
 #only digit input
 init_delay_entry.bind('<KeyRelease>', onlyNumbers)
-loop_entry.bind('<KeyRelease>', onlyNumbers)
+loop_entry      .bind('<KeyRelease>', onlyNumbers)
 
 #thread stop hotkey
 keyboard.add_hotkey('ctrl+shift+space', threadStop)
-
-
-
 
 
 # 종료시 호출
