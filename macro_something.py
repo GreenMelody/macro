@@ -339,8 +339,11 @@ def targetShowHide():
         pass
     else:
         if(show_hide_chk_var.get()):
-            for item in target_win_arr:
-                item.deiconify()     #show target window
+            for idx, item in enumerate(target_win_arr):
+                if(select_func_combo_arr[idx].get() == 'Mouse'):    #if select function is Mouse, 
+                    item.deiconify()     #show target window
+                else:
+                    pass
         else:
             for item in target_win_arr:
                 item.withdraw()
