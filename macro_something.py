@@ -119,7 +119,8 @@ def makeTarget(act_deact = 1, select_func=0, mouse_func=0, key_func=0, key_combo
     delay_entry_arr[t_cnt].bind('<KeyRelease>', onlyNumbers)
     #when combobox selected, widget condition will be change 
     select_func_combo_arr[t_cnt].bind('<<ComboboxSelected>>', actDeactWidgets)
-
+    #refresh scrollbox when item added
+    canvas.configure(scrollregion=canvas.bbox("all"))
 
 #delete target and list
 def delTarget():
@@ -155,6 +156,9 @@ def delTarget():
         chk_var                 .pop()
     else:
         print('no widget to delete')
+
+    #refresh scrollbox when item deleted
+    canvas.configure(scrollregion=canvas.bbox("all"))
 
 #thread start
 def threadStart():
@@ -519,9 +523,35 @@ def loadFile():
 
 
 #################################  UI using tkinter
+####set main_frame
+main_frame = tk.Frame(window)
+main_frame.pack(fill='both', expand=1)
+
+####set canvas for y_scroll
+canvas = tk.Canvas(main_frame)
+canvas.pack(side='left', fill='both', expand=1)
+
+####set scrollbar
+scrollbar=ttk.Scrollbar(main_frame, orient='vertical', command=canvas.yview)
+scrollbar.pack(side='right', fill='y')
+
+#mouse wheel func
+def on_MouseWheel(event):
+    # block wheel func when scroll is not available
+    if canvas.yview() == (0.0, 1.0):
+        return
+    canvas.yview_scroll(int(-1*event.delta/120), "units")
+
+####set mouse wheel
+canvas.configure(yscrollcommand=scrollbar.set)
+window.bind('<MouseWheel>', on_MouseWheel)
+
+####set second_frame on the canvas
+second_frame = tk.Frame(canvas)
+canvas.create_window((0,0), window=second_frame, anchor='nw')
 
 ####set_init
-set_init_lbframe    = tk.LabelFrame(window, text='Set Initial values')
+set_init_lbframe    = tk.LabelFrame(second_frame, text='Set Initial values')
 init_delay_lb       = tk.Label(set_init_lbframe, justify='right', text='Init delay(ms):')
 init_delay_entry    = tk.Entry(set_init_lbframe, justify='right', width=8)
 loop_lb             = tk.Label(set_init_lbframe, justify='right', text='Loop:', anchor='e')
@@ -537,7 +567,7 @@ loop_entry          .insert(0,'1')
 
 
 ####add_target_lbframe
-add_target_lbframe  = tk.LabelFrame(window, text='Add/Del Targets')
+add_target_lbframe  = tk.LabelFrame(second_frame, text='Add/Del Targets')
 add_target_btn      = tk.Button(add_target_lbframe, text='+', width=3, height=1, font=font_15_bold, command=makeTarget) #command=lambda: command_args(arg1, arg2, arg3)
 del_target_btn      = tk.Button(add_target_lbframe, text='-', width=3, height=1, font=font_15_bold, command=delTarget) #command=lambda: command_args(arg1, arg2, arg3)
 ####add_target_lbframe GRID
@@ -547,7 +577,7 @@ del_target_btn      .grid(row=0, column=1, sticky='news', padx=(5,5), pady=(5,0)
 
 
 ####Start_lbframe
-start_lbframe       = tk.LabelFrame(window, text='Start')
+start_lbframe       = tk.LabelFrame(second_frame, text='Start')
 start_btn           = tk.Button(start_lbframe, text='▶', width=3, height=1, font=font_15_bold, command=threadStart)
 ####Start_lbframe GRID
 start_lbframe       .grid(row=0, column=2, sticky='news', padx=(5,0), pady=(5,0))
@@ -555,7 +585,7 @@ start_btn           .grid(row=0, column=0, sticky='news', padx=(5,5), pady=(5,0)
 
 
 ####Stop_lbframe
-stop_lbframe        = tk.LabelFrame(window, text='Stop')
+stop_lbframe        = tk.LabelFrame(second_frame, text='Stop')
 stop_lb1            = tk.Label(stop_lbframe, text='Push ''▶'' button OR', anchor='w')
 stop_lb2            = tk.Label(stop_lbframe, text='Ctrl+Shift+Space', anchor='w')
 ####Stop_lbframe GRID
@@ -565,7 +595,7 @@ stop_lb2            .grid(row=1, column=0, sticky='news', padx=(5,0), pady=(0,0)
 
 
 ####progress_lbframe
-progress_lbframe    =tk.LabelFrame(window, text='Progress')
+progress_lbframe    =tk.LabelFrame(second_frame, text='Progress')
 prog_loop_lb1       =tk.Label(progress_lbframe, text='Loop :', anchor='e')
 prog_loop_lb2       =tk.Label(progress_lbframe, text='000/000')
 prog_element_lb1    =tk.Label(progress_lbframe, text='Element :', anchor='e')
@@ -579,7 +609,7 @@ prog_element_lb2    .grid(row=1, column=1, sticky='news', padx=(5,0), pady=(5,0)
 
 
 ####save_load_lbframe
-save_load_lbframe   =tk.LabelFrame(window, text='Save/Load')
+save_load_lbframe   =tk.LabelFrame(second_frame, text='Save/Load')
 save_btn            =tk.Button(save_load_lbframe, text='Save', width=6, height=2, command=saveFile)
 load_btn            =tk.Button(save_load_lbframe, text='Load', width=6, height=2, command=loadFile)
 ####save_load_lbframe GRID
@@ -589,7 +619,7 @@ load_btn            .grid(row=0, column=1, sticky='news', padx=(5,5), pady=(5,0)
 
 
 ####show_hide_lbframe
-show_hide_lbframe   =tk.LabelFrame(window, text='Show/Hide')
+show_hide_lbframe   =tk.LabelFrame(second_frame, text='Show/Hide')
 show_hide_chk_var   =tk.IntVar()
 show_hide_chk_btn   =ttk.Checkbutton(show_hide_lbframe, text='Show/Hide', variable=show_hide_chk_var, command=targetShowHide)
 ####show_hide_lbframe GRID
@@ -599,7 +629,7 @@ show_hide_chk_var   .set(1)
 
 
 ####set_target_lbframe
-set_target_lbframe  = tk.LabelFrame(window, text='Set Targets')
+set_target_lbframe  = tk.LabelFrame(second_frame, text='Set Targets')
 #Act(chk_btn), No. , Select Func.(Mouse, Keyboard, Hotkey, Write Text), Mouse Func.(L-click, L-Down, L-Up, R-click, R-Down, R-Up, Double, Move, Drag), key Func.(Press, KeyDown, KeyUp), Key('a', 'b',...), Hotkey(Ctrl+A, Ctrl+C, Ctrl+V), Text, Delay
 #it will execute just what you Act checked
 #when you select Mouse, then M-Function menu will be activated
