@@ -419,8 +419,7 @@ def allWidgetsActDeact():
 def saveFile():
     try:
         filename = filedialog.asksaveasfilename(initialdir="/", title="Save File",
-                                                filetypes=(("Json", "*.json"),
-                                                ("all files", "*.*")))
+                                                filetypes=(("Json", "*.json")))
         saveCondition()
         if(len(save_condition_arr) == 0):
             messagebox.showwarning(title='Warning', message='Please add targets push the + button')
@@ -446,7 +445,7 @@ def saveFile():
                     'target_win_posX'   : item[11],
                     'target_win_posY'   : item[12]
                     }
-            with open(filename, 'w', encoding='utf-8') as make_file:
+            with open(filename+".json", 'w', encoding='utf-8') as make_file:
                 json.dump(file_data, make_file, ensure_ascii=False, indent='\t')
                 messagebox.showinfo(title='Success', message='File saved successfully')
     except Exception as e:
